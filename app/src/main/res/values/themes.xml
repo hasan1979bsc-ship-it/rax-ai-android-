@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.Rax" parent="android:Theme.DeviceDefault.NoActionBar">
+        <item name="android:windowBackground">@color/rax_bg</item>
+        <item name="android:statusBarColor">@color/rax_bg</item>
+        <item name="android:navigationBarColor">@color/rax_bg</item>
+    </style>
+</resources>

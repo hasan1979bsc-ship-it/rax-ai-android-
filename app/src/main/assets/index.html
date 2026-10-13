@@ -1,0 +1,1522 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RAX AI</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='rxg' x1='10' y1='6' x2='54' y2='58' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%23f8e6b0'/%3E%3Cstop offset='.5' stop-color='%23d9ac58'/%3E%3Cstop offset='1' stop-color='%239a6c26'/%3E%3C/linearGradient%3E%3CradialGradient id='rxb' cx='32' cy='26' r='36' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%2326221a'/%3E%3Cstop offset='1' stop-color='%2309090a'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='32' cy='32' r='30' fill='url(%23rxb)' stroke='url(%23rxg)' stroke-width='2'/%3E%3Ccircle cx='32' cy='32' r='26' fill='none' stroke='url(%23rxg)' stroke-width='.7' opacity='.45'/%3E%3Cg fill='none' stroke='url(%23rxg)' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M23.5 45V19' stroke-width='4.2'/%3E%3Cpath d='M18.5 19h10M18.5 45h10' stroke-width='2'/%3E%3Cpath d='M26 19h8a7.2 7.2 0 0 1 0 14.4H26' stroke-width='2.6'/%3E%3Cpath d='M33 33.4 42.5 45' stroke-width='4.4'/%3E%3Cpath d='M38.5 45h8' stroke-width='2'/%3E%3C/g%3E%3Cpath d='M46 12.5l1.5 3.3 3.3 1.5-3.3 1.5L46 22.1l-1.5-3.3-3.3-1.5 3.3-1.5z' fill='url(%23rxg)'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&display=swap">
+<style>
+/* ---------- Design tokens ---------- */
+:root{
+  --font-sans:'DM Sans','Noto Sans Bengali',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;
+  --r-sm:8px;--r-md:12px;--r-lg:18px;--r-pill:999px;
+  --t-fast:.14s ease;--t-med:.22s ease;
+  /* dark (default) */
+  --bg:#16171c;--bg-side:#111216;--bg-raise:#1d1f26;--bg-input:#1d1f26;--bg-hover:#252833;--bg-code:#0e0f13;
+  --fg:#e9eaf0;--fg-dim:#a3a6b5;--fg-faint:#6c6f80;
+  --line:#2a2d38;--line-strong:#3a3e4d;
+  --accent:#7c6cff;--accent-hover:#9082ff;--accent-soft:rgba(124,108,255,.14);--on-accent:#fff;
+  --ok:#3ecf8e;--warn:#f0b429;--bad:#ff6b6b;
+  --shadow:0 8px 30px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+:root[data-theme="light"]{
+  --bg:#fafafb;--bg-side:#f1f1f5;--bg-raise:#ffffff;--bg-input:#ffffff;--bg-hover:#e9e9f0;--bg-code:#f3f3f8;
+  --fg:#1a1b22;--fg-dim:#555869;--fg-faint:#8b8e9f;
+  --line:#e1e1ea;--line-strong:#cacad8;
+  --accent:#5b4bf0;--accent-hover:#4a3bd9;--accent-soft:rgba(91,75,240,.1);--on-accent:#fff;
+  --ok:#14976b;--warn:#a87400;--bad:#d03a3a;
+  --shadow:0 8px 30px rgba(30,30,60,.14);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:var(--font-sans);background:var(--bg);color:var(--fg);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0;padding:0}
+button:disabled{cursor:not-allowed;opacity:.45}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+a{color:var(--accent)}
+svg.i{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------- Layout ---------- */
+#app{display:flex;height:100%}
+#side{width:280px;flex:none;background:var(--bg-side);border-right:1px solid var(--line);display:flex;flex-direction:column;transition:margin var(--t-med),transform var(--t-med);padding-top:env(safe-area-inset-top,0px)}
+#app.collapsed #side{margin-left:-280px}
+#main{flex:1;min-width:0;display:flex;flex-direction:column;position:relative}
+.brand{display:flex;align-items:center;gap:10px;padding:14px 14px 6px}
+.logo{width:30px;height:30px;border-radius:9px;background:var(--accent);display:grid;place-items:center;flex:none}
+.logo svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.brand b{font-size:17px;letter-spacing:.2px}
+.brand .sp{flex:1}
+.ib{width:34px;height:34px;border-radius:var(--r-sm);display:grid;place-items:center;color:var(--fg-dim);transition:background var(--t-fast),color var(--t-fast)}
+.ib:hover:not(:disabled){background:var(--bg-hover);color:var(--fg)}
+.side-actions{padding:8px 12px;display:flex;flex-direction:column;gap:8px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:38px;padding:0 14px;border-radius:var(--r-md);border:1px solid var(--line-strong);background:var(--bg-raise);font-weight:500;transition:background var(--t-fast),border-color var(--t-fast)}
+.btn:hover:not(:disabled){background:var(--bg-hover)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.primary:hover:not(:disabled){background:var(--accent-hover);border-color:var(--accent-hover)}
+.btn.danger{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn.sm{height:32px;padding:0 10px;font-size:13px}
+.btn.ghost{border-color:transparent;background:transparent}
+.search{position:relative}
+.search svg{position:absolute;left:11px;top:10px;color:var(--fg-faint)}
+.search input{width:100%;height:38px;border-radius:var(--r-md);border:1px solid var(--line);background:var(--bg-input);padding:0 12px 0 36px}
+.search input::placeholder{color:var(--fg-faint)}
+#chatlist{flex:1;overflow-y:auto;padding:4px 8px 8px}
+.grp{font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--fg-faint);padding:12px 8px 4px;font-weight:600}
+.chat-item{display:flex;align-items:center;gap:2px;border-radius:var(--r-sm);padding-right:2px;position:relative}
+.chat-item:hover,.chat-item.active{background:var(--bg-hover)}
+.chat-item.active{box-shadow:inset 2px 0 0 var(--accent)}
+.chat-item .t{flex:1;min-width:0;text-align:left;padding:8px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
+.chat-item .acts{display:none;gap:0}
+.chat-item:hover .acts,.chat-item:focus-within .acts{display:flex}
+.chat-item .acts .ib{width:26px;height:26px}
+.chat-item .acts svg{width:15px;height:15px}
+.pin-mark{color:var(--accent);margin-left:8px;flex:none}
+.pin-mark svg{width:13px;height:13px}
+.empty-list{color:var(--fg-faint);font-size:13px;padding:14px 10px}
+.side-foot{border-top:1px solid var(--line);padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px}
+.status{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--fg-dim);padding:2px 4px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--fg-faint);flex:none}
+.dot.ok{background:var(--ok)}.dot.bad{background:var(--bad)}.dot.warn{background:var(--warn)}
+.foot-row{display:flex;gap:6px}
+.foot-row .btn{flex:1;height:36px;font-size:13.5px}
+.profile{display:flex;align-items:center;gap:10px;padding:2px 4px}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:700;font-size:13px}
+.profile small{color:var(--fg-faint);display:block;line-height:1.2}
+
+header.top{display:flex;align-items:center;gap:8px;height:52px;padding:0 12px;padding-top:env(safe-area-inset-top,0px);box-sizing:content-box;flex:none}
+header.top h1{font-size:15px;font-weight:600;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+#scroll{flex:1;overflow-y:auto;scroll-behavior:smooth;position:relative}
+.wrap{max-width:780px;margin:0 auto;padding:8px 16px 24px}
+
+/* welcome */
+.welcome{max-width:780px;margin:0 auto;padding:7vh 16px 24px}
+.welcome .logo{width:46px;height:46px;border-radius:14px;margin-bottom:18px}
+.welcome .logo svg{width:30px;height:30px}
+.welcome h2{font-size:clamp(26px,4.4vw,38px);line-height:1.15;margin:0 0 10px;letter-spacing:-.02em;text-wrap:balance}
+.welcome p.lead{color:var(--fg-dim);max-width:60ch;margin:0 0 26px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.card{text-align:left;padding:14px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--bg-raise);display:flex;flex-direction:column;gap:6px;transition:border-color var(--t-fast),background var(--t-fast);min-width:0}
+.card:hover{border-color:var(--accent);background:var(--bg-hover)}
+.card b{font-size:14px}
+.card span{font-size:13px;color:var(--fg-dim)}
+.feat{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 22px}
+.chip{font-size:12.5px;padding:4px 10px;border-radius:var(--r-pill);background:var(--accent-soft);color:var(--accent);font-weight:500}
+.notice{margin-top:22px;padding:12px 14px;border:1px dashed var(--line-strong);border-radius:var(--r-md);color:var(--fg-dim);font-size:13.5px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.notice .btn{margin-left:auto}
+
+/* messages */
+.msg{display:flex;gap:12px;padding:14px 0;min-width:0}
+.msg .av{width:30px;height:30px;border-radius:9px;flex:none;display:grid;place-items:center;font-size:12px;font-weight:700}
+.msg.user .av{background:var(--bg-hover);color:var(--fg-dim)}
+.msg.assistant .av{background:var(--accent)}
+.msg.assistant .av svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.msg .body{flex:1;min-width:0}
+.msg .who{font-size:12.5px;font-weight:600;color:var(--fg-dim);margin-bottom:2px}
+.msg.user .bubble{background:var(--bg-raise);border:1px solid var(--line);border-radius:var(--r-md);padding:10px 14px;display:inline-block;max-width:100%;white-space:pre-wrap;overflow-wrap:anywhere}
+.atts{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.att{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:3px 9px;border:1px solid var(--line);border-radius:var(--r-pill);background:var(--bg-raise);max-width:240px}
+.att span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.att img{width:22px;height:22px;object-fit:cover;border-radius:4px}
+.att button{color:var(--fg-faint);display:grid}
+.att button:hover{color:var(--bad)}
+.md{overflow-wrap:anywhere}
+.md>*:first-child{margin-top:0}.md>*:last-child{margin-bottom:0}
+.md p{margin:0 0 .85em}
+.md h1,.md h2,.md h3,.md h4{line-height:1.25;margin:1.3em 0 .5em;text-wrap:balance}
+.md h1{font-size:1.4em}.md h2{font-size:1.2em}.md h3{font-size:1.07em}.md h4{font-size:1em}
+.md ul,.md ol{padding-left:1.4em;margin:0 0 .85em}.md li{margin:.2em 0}
+.md blockquote{margin:0 0 .85em;padding:2px 14px;border-left:3px solid var(--accent);color:var(--fg-dim)}
+.md hr{border:0;border-top:1px solid var(--line);margin:1.2em 0}
+.md code{font-family:var(--font-mono);font-size:.88em;background:var(--bg-code);border:1px solid var(--line);padding:1px 5px;border-radius:5px}
+.md .tw{overflow-x:auto;margin:0 0 .85em}
+.md table{border-collapse:collapse;font-size:.93em}
+.md th,.md td{border:1px solid var(--line);padding:6px 10px;text-align:left}
+.md th{background:var(--bg-raise)}
+.codeblk{margin:0 0 .95em;border:1px solid var(--line);border-radius:var(--r-md);background:var(--bg-code);overflow:hidden}
+.codeblk .ch{display:flex;align-items:center;justify-content:space-between;padding:4px 6px 4px 12px;border-bottom:1px solid var(--line);font-size:12px;color:var(--fg-faint);font-family:var(--font-mono)}
+.codeblk .ch button{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:3px 8px;border-radius:6px;color:var(--fg-dim)}
+.codeblk .ch button:hover{background:var(--bg-hover);color:var(--fg)}
+.codeblk pre{margin:0;padding:12px 14px;overflow-x:auto}
+.codeblk pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.6;display:block;white-space:pre}
+.tk-c{color:var(--fg-faint);font-style:italic}.tk-s{color:var(--ok)}.tk-n{color:var(--warn)}.tk-k{color:var(--accent)}
+.caret{display:inline-block;width:8px;height:1em;background:var(--accent);vertical-align:-2px;margin-left:2px;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.acts-row{display:flex;gap:2px;margin-top:6px;opacity:.75}
+.acts-row .ib{width:30px;height:30px}
+.acts-row .ib svg{width:16px;height:16px}
+.acts-row .autotag{font-size:12.5px;color:var(--fg-faint);padding:0 8px;white-space:nowrap;border:1px dashed var(--line-strong);border-radius:var(--r-sm);height:32px;display:inline-flex;align-items:center}
+.ib.on{color:var(--accent)}
+.msg.user .acts-row{opacity:0}
+.msg.user:hover .acts-row,.msg.user:focus-within .acts-row{opacity:.85}
+.err{margin-top:8px;padding:10px 12px;border:1px solid var(--bad);border-radius:var(--r-md);background:color-mix(in srgb,var(--bad) 10%,transparent);display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;font-size:14px}
+.err p{margin:0;flex:1;min-width:200px}
+.edit-box{width:100%}
+.edit-box textarea{width:100%;min-height:80px;border-radius:var(--r-md);border:1px solid var(--accent);background:var(--bg-input);padding:10px 12px;resize:vertical}
+.edit-box .row{display:flex;gap:8px;margin-top:8px;justify-content:flex-end}
+#toLatest{position:absolute;left:50%;transform:translateX(-50%);bottom:8px;z-index:3;width:36px;height:36px;border-radius:50%;background:var(--bg-raise);border:1px solid var(--line-strong);display:grid;place-items:center;box-shadow:var(--shadow)}
+#toLatest[hidden]{display:none}
+
+/* composer */
+.composer-wrap{flex:none;padding:6px 16px calc(14px + env(safe-area-inset-bottom,0px));position:relative}
+.composer{max-width:780px;margin:0 auto;border:1px solid var(--line-strong);background:var(--bg-input);border-radius:var(--r-lg);padding:8px 8px 8px 12px;transition:border-color var(--t-fast),box-shadow var(--t-fast)}
+.composer:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+#atts{display:flex;flex-wrap:wrap;gap:6px;padding:2px 0 6px}
+#atts:empty{display:none}
+#input{width:100%;border:0;outline:0;background:transparent;resize:none;max-height:220px;min-height:26px;padding:6px 2px;line-height:1.5}
+#input::placeholder{color:var(--fg-faint)}
+.tools{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.tools .sp{flex:1}
+.sel{height:32px;border:1px solid var(--line);background:var(--bg-raise);border-radius:var(--r-sm);padding:0 8px;font-size:13px;max-width:170px;min-width:0;color:var(--fg-dim)}
+.sel:focus-visible{outline-offset:1px}
+#send{width:36px;height:36px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center}
+#send:hover:not(:disabled){background:var(--accent-hover)}
+#send.stop{background:var(--bad)}
+.hint{max-width:780px;margin:6px auto 0;text-align:center;font-size:11.5px;color:var(--fg-faint)}
+.rec{color:var(--bad)!important;animation:pulse 1.2s infinite}
+.ib.on{background:var(--accent-soft);color:var(--accent)}
+.imgs{display:flex;flex-wrap:wrap;gap:10px;margin:2px 0 8px}
+.gimg{margin:0;max-width:min(100%,520px);display:flex;flex-direction:column;gap:6px}
+.gimg img{display:block;max-width:100%;height:auto;min-height:120px;min-width:120px;border-radius:var(--r-md);border:1px solid var(--line);background:var(--bg-raise)}
+.gimg figcaption{display:flex;gap:6px}
+.tag{font-size:11.5px;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:1px 8px;border-radius:var(--r-pill);margin-right:6px;vertical-align:1px}
+@keyframes pulse{50%{opacity:.4}}
+
+/* modal / toast */
+.ov{position:fixed;inset:0;background:rgba(5,6,10,.6);display:grid;place-items:center;z-index:50;padding:16px;backdrop-filter:blur(2px)}
+.modal{width:min(720px,100%);max-height:calc(100% - 8px);overflow:auto;background:var(--bg);border:1px solid var(--line-strong);border-radius:var(--r-lg);box-shadow:var(--shadow);display:flex;flex-direction:column}
+.modal.sm{width:min(420px,100%)}
+.mh{display:flex;align-items:center;gap:10px;padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.mh h3{margin:0;font-size:17px;flex:1}
+.mb{padding:16px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.mf{display:flex;gap:8px;justify-content:flex-end;padding:12px 16px;border-top:1px solid var(--line);flex-wrap:wrap}
+.tabs{display:flex;gap:4px;padding:8px 12px 0;border-bottom:1px solid var(--line);overflow-x:auto}
+.tab{padding:8px 12px;border-bottom:2px solid transparent;color:var(--fg-dim);font-weight:500;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--fg);border-color:var(--accent)}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label,.lbl{font-size:13px;font-weight:600;color:var(--fg-dim)}
+.field input[type=text],.field input[type=password],.field input[type=url],.field select,.txt{height:40px;border:1px solid var(--line-strong);background:var(--bg-input);border-radius:var(--r-md);padding:0 12px;width:100%;min-width:0}
+.field small,.muted{color:var(--fg-faint);font-size:12.5px}
+.keyrow{display:flex;gap:6px}
+.keyrow .ib{border:1px solid var(--line-strong);height:40px;width:40px}
+.pcard{border:1px solid var(--line);border-radius:var(--r-md);background:var(--bg-raise);padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.pcard .top{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.pcard .top .info{flex:1;min-width:180px}
+.pcard h4{margin:0;font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pcard p{margin:2px 0 0;color:var(--fg-dim);font-size:13px}
+.badge{font-size:11.5px;padding:2px 8px;border-radius:var(--r-pill);border:1px solid var(--line-strong);color:var(--fg-dim);font-weight:500;display:inline-flex;align-items:center;gap:6px}
+.badge.ok{color:var(--ok);border-color:var(--ok)}.badge.bad{color:var(--bad);border-color:var(--bad)}.badge.warn{color:var(--warn);border-color:var(--warn)}
+.badge.def{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+.pform{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:12px}
+.pbtns{display:flex;gap:6px;flex-wrap:wrap}
+.perr{color:var(--bad);font-size:13px;overflow-wrap:anywhere}
+.pok{color:var(--ok);font-size:13px}
+.tablew{overflow-x:auto}
+table.cmp{border-collapse:collapse;width:100%;min-width:560px;font-size:13.5px}
+.cmp th,.cmp td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.cmp th{color:var(--fg-dim);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.steps{display:flex;gap:6px}
+.steps i{flex:1;height:4px;border-radius:4px;background:var(--line-strong)}
+.steps i.on{background:var(--accent)}
+.warnbox{border:1px solid var(--warn);border-radius:var(--r-md);padding:10px 12px;font-size:13px;color:var(--fg-dim);background:color-mix(in srgb,var(--warn) 8%,transparent)}
+.row2{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.switch{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.switch input{margin-top:4px;accent-color:var(--accent);width:16px;height:16px}
+#toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(90px + env(safe-area-inset-bottom,0px));z-index:70;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:var(--r-pill);font-size:13.5px;box-shadow:var(--shadow);animation:tin .2s ease}
+@keyframes tin{from{opacity:0;transform:translateY(6px)}}
+.scrim{display:none}
+@media (max-width:820px){
+  #side{position:fixed;left:0;top:0;bottom:0;z-index:40;margin-left:0!important;transform:translateX(-100%);width:min(300px,86vw);box-shadow:var(--shadow)}
+  #app.drawer #side{transform:none}
+  #app.drawer .scrim{display:block;position:fixed;inset:0;background:rgba(5,6,10,.55);z-index:35}
+  .hide-m{display:none!important}
+  .sel{max-width:118px}
+}
+@media (min-width:821px){.show-m{display:none!important}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* ---------- Redesign: minimal chat layout, gold classic brand ---------- */
+:root{--bg:#000;--bg-side:#090909;--bg-raise:#171717;--bg-input:#1f1f1f;--bg-hover:#1d1d1d;--bg-code:#0d0d0d;--fg:#ececec;--fg-dim:#a8a8a8;--fg-faint:#707070;--line:#242424;--line-strong:#333;--accent:#d9b36a;--accent-hover:#ecc987;--accent-soft:rgba(217,179,106,.14);--on-accent:#1b1405;--grad:linear-gradient(135deg,#f3dba0,#c9993f)}
+:root[data-theme="light"]{--bg:#ffffff;--bg-side:#f7f7f5;--bg-raise:#ffffff;--bg-input:#f4f4f2;--bg-hover:#ecece8;--bg-code:#f4f4f2;--fg:#161616;--fg-dim:#5c5c5c;--fg-faint:#8a8a8a;--line:#e5e5e1;--line-strong:#d2d2cc;--accent:#8a5f12;--accent-hover:#6f4c0d;--accent-soft:rgba(138,95,18,.1);--on-accent:#ffffff;--grad:linear-gradient(135deg,#b78523,#8a5f12)}
+#col{flex:1;min-width:0;display:flex;flex-direction:column}
+#main{flex:1;min-height:0;min-width:0;display:flex;flex-direction:column;position:relative}
+.btn.primary{background:var(--grad);border-color:transparent;color:var(--on-accent)}
+.btn.primary:hover:not(:disabled){filter:brightness(1.08);background:var(--grad)}
+[hidden]{display:none!important}
+/* logo */
+.logo-btn{width:32px;height:32px;flex:none;display:block;border-radius:50%}
+.logo-btn svg,.hero-logo svg,.msg .av svg{width:100%;height:100%;display:block;stroke:none}
+.msg.assistant .av{background:none;width:30px;height:30px}
+.hero-logo{width:64px;height:64px;margin:0 auto 18px;filter:drop-shadow(0 6px 22px rgba(217,179,106,.28))}
+/* sidebar */
+#side{width:260px;background:var(--bg-side);border-right:1px solid var(--line)}
+.brand{padding:12px 12px 8px;gap:10px}
+.brand b{font-size:16px;font-weight:600;letter-spacing:.3px}
+.mainnav{padding:4px 8px;display:flex;flex-direction:column;gap:1px}
+.navi{display:flex;align-items:center;gap:11px;height:36px;padding:0 10px;border-radius:10px;color:var(--fg);font-size:14px;text-align:left;white-space:nowrap}
+.navi:hover{background:var(--bg-hover)}
+.navi.hl{background:var(--bg-hover)}
+.navi svg{color:var(--fg-dim)}
+.sbox{position:relative;padding:4px 10px}
+.sbox svg{position:absolute;left:20px;top:13px;color:var(--fg-faint);width:16px;height:16px}
+.sbox input{width:100%;height:36px;border-radius:10px;border:1px solid var(--line-strong);background:var(--bg-input);padding:0 10px 0 34px;font-size:13.5px}
+#chatlist{flex:1;overflow-y:auto;padding:6px 8px 8px;margin-top:6px}
+.grp{text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--fg-faint);padding:16px 10px 6px;font-weight:500}
+.chat-item{border-radius:10px}
+.chat-item .t{font-size:13.5px;padding:8px 10px}
+.chat-item.active,.chat-item:hover{background:var(--bg-hover)}
+.chat-item.active{box-shadow:none}
+.side-foot{padding:10px 8px;border-top:1px solid var(--line)}
+.profile{padding:6px 8px;border:0;background:none;border-radius:10px;display:flex;align-items:center;gap:10px}
+.profile:hover{background:var(--bg-hover)}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--grad);color:var(--on-accent);font-weight:700;display:grid;place-items:center;flex:none}
+.pname{font-size:13.5px;font-weight:600;line-height:1.25}.pname small{display:block;font-weight:400;color:var(--fg-faint);font-size:11.5px}
+/* top bar */
+header.top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;height:56px;padding:0 14px;border:0;background:transparent;gap:8px}
+.tl{display:flex;align-items:center}.tr{display:flex;align-items:center;justify-content:flex-end;gap:8px}
+.seg2{display:flex;background:var(--bg-raise);border:1px solid var(--line);border-radius:999px;padding:3px}
+.seg2 button{height:30px;padding:0 22px;border-radius:999px;font-size:13.5px;font-weight:500;color:var(--fg-faint)}
+.seg2 button.on{background:var(--bg-hover);color:var(--fg);box-shadow:0 0 0 1px var(--line-strong) inset}
+.pill{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 12px;border:1px solid var(--line);border-radius:999px;font-size:12.5px;color:var(--fg-dim);white-space:nowrap}
+.pill svg{width:14px;height:14px;color:var(--accent)}
+.badge{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px;border-radius:999px;border:1px solid var(--line);font-size:12.5px;color:var(--fg-dim);white-space:nowrap}
+/* composer */
+.composer-wrap{flex:none;padding:6px 16px calc(14px + env(safe-area-inset-bottom,0px))}
+.composer{max-width:760px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:flex-end;gap:6px;border:1px solid transparent;background:var(--bg-input);border-radius:28px;padding:8px 10px}
+.composer:focus-within{border-color:var(--line-strong);box-shadow:none}
+#atts{flex:0 0 100%}#atts:empty{display:none}
+.composer .plus{width:38px;height:38px;border-radius:50%;flex:none}
+.composer .plus svg{width:22px;height:22px}
+#input{flex:1;min-width:0;padding:9px 4px;font-size:15.5px;max-height:220px}
+.rt{display:flex;align-items:center;gap:4px;flex:none;height:38px}
+.rt .sel{background:transparent;border:0;color:var(--fg-dim);max-width:130px;font-size:13px;cursor:pointer}
+.rt .sel:hover{color:var(--fg)}
+.rt .sel option{background:var(--bg-raise);color:var(--fg)}
+#send{width:36px;height:36px;border-radius:50%;background:var(--fg);color:var(--bg);display:grid;place-items:center;box-shadow:none;margin-left:2px}
+#send:disabled{opacity:.35}
+.composer{position:relative}
+.plusmenu{position:absolute;left:0;bottom:calc(100% + 8px);width:min(420px,calc(100vw - 32px));background:var(--bg-raise);border:1px solid var(--line-strong);border-radius:18px;padding:6px;box-shadow:0 14px 44px rgba(0,0,0,.45);z-index:20;max-height:60vh;overflow-y:auto}
+.plusmenu button{display:flex;align-items:center;gap:14px;width:100%;padding:10px 12px;border-radius:12px;text-align:left}
+.plusmenu button:hover,.plusmenu button:focus-visible{background:var(--bg-hover)}
+#main.empty .plusmenu{bottom:auto;top:calc(100% + 8px)}
+.plusmenu .pt{display:flex;flex-direction:column;min-width:0;flex:1}.plusmenu .pt b{font-size:14px;font-weight:500}.plusmenu .pt small{font-size:12.5px;color:var(--fg-faint)}
+.plusmenu svg{width:20px;height:20px;color:var(--fg-dim)}.plusmenu svg.ok{color:var(--accent)}
+.hint{max-width:760px;margin:8px auto 0;text-align:center;font-size:11.5px;color:var(--fg-faint)}
+/* empty (home) state */
+.hero-top,#heroSug{display:none}
+#main.empty{justify-content:center}
+#main.empty #scroll{display:none}
+#main.empty .composer-wrap{padding-bottom:10vh}
+#main.empty .hero-top{display:block;text-align:center;margin-bottom:22px}
+#main.empty .hero-top h2{margin:0;font-size:clamp(24px,3.4vw,32px);font-weight:500;letter-spacing:-.01em}
+#main.empty #heroSug{display:block;max-width:760px;margin:18px auto 0}
+#main.empty .hint{display:none}
+.sugrow{display:flex;align-items:center;gap:14px;width:100%;padding:11px 18px;border-radius:14px;color:var(--fg-dim);font-size:14.5px;text-align:left}
+.sugrow:hover{background:var(--bg-hover);color:var(--fg)}.sugrow svg{color:var(--fg-faint)}
+#heroSug .notice{margin:0 0 10px}
+/* desktop collapsed rail */
+@media (min-width:821px){
+  #app.collapsed #side{width:56px;margin-left:0}
+  #app.collapsed .brand b,#app.collapsed .brand .sp,#app.collapsed #collapseBtn,#app.collapsed .navi span,#app.collapsed #chatlist,#app.collapsed #sbox,#app.collapsed .pname{display:none}
+  #app.collapsed .brand{justify-content:center;padding:12px 0 8px}
+  #app.collapsed .navi{justify-content:center;padding:0}
+  #app.collapsed .mainnav{padding:4px 8px}
+  #app.collapsed .profile{justify-content:center;padding:6px 0}
+  #app.collapsed #chatlist{display:none}
+  #app.collapsed .side-foot{margin-top:auto}
+  #menuBtn{display:none}
+}
+@media (max-width:820px){.seg2 button{padding:0 16px}.rt .sel{max-width:96px}}
+@media (max-width:700px){.rt{flex:0 0 100%;justify-content:flex-end;height:auto}.composer{border-radius:22px}}
+
+/* ---------- Zyricon-style glass theme (purple) ---------- */
+:root{--bg:#0b0810;--bg-side:rgba(10,6,18,.55);--bg-raise:rgba(255,255,255,.045);--bg-input:rgba(255,255,255,.05);--bg-hover:rgba(255,255,255,.075);--bg-code:rgba(0,0,0,.38);--fg:#f1edf8;--fg-dim:#aaa3ba;--fg-faint:#736c84;--line:rgba(255,255,255,.08);--line-strong:rgba(255,255,255,.15);--accent:#b07cff;--accent-hover:#c49bff;--accent-soft:rgba(176,124,255,.16);--on-accent:#fff;--grad:linear-gradient(135deg,#c08bff,#7c3aed);--solid:#171021;--frame:#050309;--glowA:rgba(176,90,255,.42);--glowB:rgba(80,50,210,.30);--glowC:rgba(220,90,200,.14)}
+:root[data-theme="light"]{--bg:#f6f2fc;--bg-side:rgba(255,255,255,.55);--bg-raise:rgba(255,255,255,.7);--bg-input:rgba(255,255,255,.8);--bg-hover:rgba(124,58,237,.08);--bg-code:rgba(124,58,237,.06);--fg:#1e1533;--fg-dim:#5d5575;--fg-faint:#8f88a6;--line:rgba(60,30,120,.1);--line-strong:rgba(60,30,120,.2);--accent:#7c3aed;--accent-hover:#6a2bd6;--accent-soft:rgba(124,58,237,.12);--on-accent:#fff;--grad:linear-gradient(135deg,#9b5cf6,#6d28d9);--solid:#ffffff;--frame:#e6def5;--glowA:rgba(176,110,255,.38);--glowB:rgba(110,140,255,.25);--glowC:rgba(255,140,210,.2)}
+body{background:var(--frame)}
+#app{margin:10px;height:calc(100% - 20px);height:calc(100dvh - 20px);border-radius:24px;border:1px solid var(--line-strong);overflow:hidden;background:radial-gradient(60% 55% at 80% 6%,var(--glowA),transparent 70%),radial-gradient(50% 50% at 18% 96%,var(--glowB),transparent 72%),radial-gradient(40% 40% at 55% 55%,var(--glowC),transparent 75%),var(--bg);box-shadow:0 20px 80px rgba(60,20,140,.25)}
+*{scrollbar-width:thin;scrollbar-color:var(--line-strong) transparent}
+/* sidebar */
+#side{width:268px;background:var(--bg-side);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);border-right:1px solid var(--line)}
+.brand{padding:16px 14px 10px}
+.brand b{font-size:17px;font-weight:600;letter-spacing:.2px}
+.logo-btn{width:30px;height:30px}
+.mainnav{padding:6px 10px;gap:2px}
+.navi{height:38px;border-radius:12px;font-size:14px;color:var(--fg-dim)}
+.navi svg{width:17px;height:17px;color:var(--fg-faint)}
+.navi:hover{background:var(--bg-hover);color:var(--fg)}
+.navi.hl{color:var(--fg);background:rgba(255,255,255,.07);border:1px solid var(--line);margin-bottom:6px}
+:root[data-theme="light"] .navi.hl{background:rgba(124,58,237,.1)}
+.navi.hl svg{color:var(--fg)}
+.navlbl{font-size:12px;color:var(--fg-faint);padding:12px 12px 4px;font-weight:500}
+.grp{font-size:12px;padding:14px 12px 5px}
+.chat-item{border-radius:12px}
+.chat-item .t{color:var(--fg-dim)}
+.chat-item.active .t,.chat-item:hover .t{color:var(--fg)}
+.chat-item.active{background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px var(--line)}
+.side-foot{padding:10px 10px calc(10px + env(safe-area-inset-bottom,0px));border-top:0;gap:8px}
+.upg{border:1px solid var(--line);border-radius:16px;padding:14px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));display:flex;flex-direction:column;gap:6px}
+.upg .crown{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)}
+.upg .crown svg{width:16px;height:16px}
+.upg b{font-size:13.5px;font-weight:600;margin-top:4px}
+.upg p{margin:0;font-size:12px;color:var(--fg-faint);line-height:1.45}
+.upgbtn{margin-top:8px;height:36px;border-radius:11px;background:rgba(255,255,255,.07);border:1px solid var(--line);font-size:13.5px;font-weight:500;transition:background var(--t-fast)}
+.upgbtn:hover{background:var(--grad);border-color:transparent;color:#fff}
+/* top bar */
+header.top{display:flex;justify-content:space-between;height:60px;padding:0 18px;gap:10px}
+.tl{gap:8px;min-width:0}
+.seg2{display:none}
+#provPill{cursor:pointer;height:34px;padding:0 14px;background:var(--bg-raise);border:1px solid var(--line);border-radius:999px;color:var(--fg);font-size:13px;gap:8px}
+#provPill::after{content:"";width:6px;height:6px;border-right:1.6px solid var(--fg-dim);border-bottom:1.6px solid var(--fg-dim);transform:rotate(45deg) translateY(-2px);margin-left:4px}
+#provPill:hover{background:var(--bg-hover)}
+.badge{height:34px}
+.gbtn{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:var(--bg-raise);font-size:13px;font-weight:500;color:var(--fg);transition:background var(--t-fast),border-color var(--t-fast)}
+.gbtn:hover{background:var(--bg-hover);border-color:var(--line-strong)}
+.gbtn svg{width:15px;height:15px;color:var(--fg-dim)}
+#themeBtn{border:1px solid var(--line);border-radius:50%;width:34px;height:34px;background:var(--bg-raise)}
+/* orb + hero */
+.orb{position:relative;width:78px;height:78px;border-radius:50%;margin:0 auto 26px;background:radial-gradient(circle at 34% 28%,#e4d4ff 0%,#9a6bf5 24%,#4a27a8 56%,#1a0d45 100%);box-shadow:0 0 36px rgba(150,95,255,.6),0 0 100px rgba(120,60,230,.35),inset -7px -9px 20px rgba(8,0,38,.65),inset 6px 6px 14px rgba(255,255,255,.28),inset 0 0 0 1px rgba(170,190,255,.35);animation:orbfloat 6s ease-in-out infinite}
+.orb::before{content:"";position:absolute;left:17%;top:12%;width:34%;height:22%;border-radius:50%;background:radial-gradient(ellipse,rgba(255,255,255,.75),transparent 70%);transform:rotate(-28deg);filter:blur(1px)}
+.orb::after{content:"";position:absolute;inset:-14px;border-radius:50%;background:radial-gradient(circle,rgba(160,110,255,.28),transparent 65%);z-index:-1}
+@keyframes orbfloat{50%{transform:translateY(-8px)}}
+#main.empty{justify-content:flex-start;overflow-y:auto;overflow-x:hidden}
+#main.empty .composer-wrap{flex:1 0 auto;min-height:min-content;display:flex;flex-direction:column;justify-content:flex-end;width:100%;max-width:840px;margin:0 auto;padding:6px 22px 20px}
+#main.empty .hero-top{margin:auto 0;padding:18px 0}
+#main.empty .hero-top h2{font-size:clamp(24px,3.4vw,33px);font-weight:500;letter-spacing:-.015em}
+.hero-chips{display:none}
+#main.empty .hero-chips{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 14px}
+.hchip{display:inline-flex;align-items:center;gap:10px;height:34px;padding:0 15px;border-radius:999px;border:1px solid var(--line);background:var(--bg-raise);font-size:13px;color:var(--fg);transition:background var(--t-fast),border-color var(--t-fast)}
+.hchip:hover{background:var(--bg-hover);border-color:var(--line-strong)}
+.hchip svg{width:15px;height:15px;color:var(--fg-dim)}
+/* composer */
+.composer-wrap{padding:6px 22px calc(16px + env(safe-area-inset-bottom,0px))}
+.composer{max-width:800px;display:flex;flex-direction:column;flex-wrap:nowrap;align-items:stretch;gap:0;border:1px solid var(--line-strong);background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025));backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-radius:20px;padding:14px 14px 10px}
+:root[data-theme="light"] .composer{background:rgba(255,255,255,.8)}
+#main.empty .composer{width:100%;min-height:128px;max-width:none}
+.composer:focus-within{border-color:rgba(176,124,255,.55);box-shadow:0 0 0 3px rgba(176,124,255,.12),0 10px 40px rgba(120,60,230,.18)}
+.inrow{display:flex;gap:10px;align-items:flex-start}
+.inrow .spk{color:var(--accent);padding-top:5px;flex:none}
+.inrow .spk svg{width:18px;height:18px}
+#input{padding:3px 0;min-height:40px;font-size:15px}
+.tools2{display:flex;align-items:center;gap:2px;margin-top:8px;flex-wrap:wrap}
+.tb{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 12px;font-size:12.5px;color:var(--fg-dim);border-radius:8px;transition:color var(--t-fast),background var(--t-fast)}
+.tb:hover{color:var(--fg);background:var(--bg-hover)}
+.tb svg{width:14px;height:14px}
+.tb+.tb{border-left:1px solid var(--line);border-radius:0 8px 8px 0}
+.tools2 .sp{flex:1}
+.rt{gap:8px;height:auto}
+#micBtn{width:34px;height:34px;border:1px solid var(--line);border-radius:50%;background:var(--bg-raise)}
+#micBtn svg{width:15px;height:15px}
+#send{background:var(--grad);color:#fff;width:34px;height:34px;box-shadow:0 4px 16px rgba(124,58,237,.45);margin:0}
+#send svg{width:16px;height:16px}
+#send.stop{background:var(--bad);box-shadow:none}
+#send:disabled{opacity:.5}
+.plusmenu,#main.empty .plusmenu{background:var(--solid);bottom:calc(100% + 8px);top:auto;left:0}
+.optpanel{position:absolute;right:0;bottom:calc(100% + 8px);width:min(320px,calc(100vw - 32px));background:var(--solid);border:1px solid var(--line-strong);border-radius:16px;padding:14px;box-shadow:0 14px 44px rgba(0,0,0,.45);z-index:20;display:flex;flex-direction:column;gap:12px}
+.optpanel .of{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:var(--fg-dim)}
+.optpanel .of:has(select[hidden]){display:none}
+.optpanel .sel{width:100%;max-width:none;height:36px;border-radius:10px;background:var(--bg-input);color:var(--fg);font-weight:400}
+.sel option,.rt .sel option{background:var(--solid);color:var(--fg)}
+.optpanel .tip{font-size:11.5px;color:var(--fg-faint);font-weight:400;margin:0}
+/* hero cards */
+#main.empty #heroSug{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:none;width:100%;margin:14px 0 0}
+#heroSug .notice{grid-column:1/-1;margin:0}
+.gcard{display:flex;flex-direction:column;gap:6px;text-align:left;padding:14px;min-height:112px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));transition:transform var(--t-med),border-color var(--t-fast),background var(--t-fast)}
+.gcard:hover{border-color:rgba(176,124,255,.5);background:rgba(176,124,255,.08);transform:translateY(-2px)}
+.gcard .gt{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.gcard .gi{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:var(--bg-hover);color:var(--fg-dim)}
+.gcard .gi svg{width:15px;height:15px}
+.gcard .gb{font-size:10.5px;padding:3px 9px;border-radius:999px;border:1px solid var(--line-strong);color:var(--fg-dim);background:var(--bg-raise)}
+.gcard b{font-size:14px;font-weight:600}
+.gcard small{font-size:12px;color:var(--fg-faint);line-height:1.45}
+/* messages */
+.msg.user .bubble{background:rgba(176,124,255,.12);border:1px solid rgba(176,124,255,.25);border-radius:16px}
+.msg.user .av{background:var(--accent-soft);color:var(--accent)}
+.codeblk,.md code{border-color:var(--line)}
+.modal{background:var(--solid)}
+.ov{backdrop-filter:blur(6px)}
+@media (max-width:820px){
+  #app{margin:0;height:100%;height:100dvh;border-radius:0;border:0}
+  #side{background:var(--solid)}
+  header.top{padding:0 10px}
+}
+@media (max-width:700px){
+  #main.empty #heroSug{grid-template-columns:1fr}
+  .gcard{min-height:0}
+  .gbtn span{display:none}.gbtn{padding:0 10px}
+  .composer{border-radius:20px}
+  #main.empty .composer-wrap{padding:6px 14px 16px}
+}
+@media (min-width:821px){
+  #app.collapsed .navlbl,#app.collapsed .upg{display:none}
+}
+@media (max-width:700px){
+  .tb span{display:none}.tb{padding:0 10px}
+  .tools2 .rt{flex:0 0 auto;height:auto}
+  .tools2{flex-wrap:nowrap}
+  #main.empty .hero-top{padding:8px 0}
+  .orb{width:64px;height:64px;margin-bottom:18px}
+  .gcard{min-height:0;padding:12px 14px}
+  .gcard small{display:none}
+  .gcard .gt{margin-bottom:2px}
+  #main.empty #heroSug{gap:8px}
+}
+/* compact upgrade card */
+.upg{padding:10px 12px;gap:4px;border-radius:14px}
+.upg .crown{width:22px;height:22px;border-radius:7px;position:absolute;margin:0}
+.upg{position:relative}
+.upg .crown svg{width:12px;height:12px}
+.upg b{font-size:12.5px;margin:0 0 0 30px;line-height:22px}
+.upg p{font-size:11px;line-height:1.35;margin-top:2px}
+.upgbtn{height:28px;margin-top:6px;border-radius:9px;font-size:12px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="scrim" id="scrim"></div>
+  <aside id="side" aria-label="Sidebar">
+    <div class="brand">
+      <button class="logo-btn" id="logoBtn" aria-label="RAX AI" title="RAX AI"><svg viewBox="0 0 64 64" role="img" aria-label="RAX AI"><defs><linearGradient id="rxg" x1="10" y1="6" x2="54" y2="58" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#f8e6b0"/><stop offset=".5" stop-color="#d9ac58"/><stop offset="1" stop-color="#9a6c26"/></linearGradient><radialGradient id="rxb" cx="32" cy="26" r="36" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#26221a"/><stop offset="1" stop-color="#09090a"/></radialGradient></defs><circle cx="32" cy="32" r="30" fill="url(#rxb)" stroke="url(#rxg)" stroke-width="2"/><circle cx="32" cy="32" r="26" fill="none" stroke="url(#rxg)" stroke-width=".7" opacity=".45"/><g fill="none" stroke="url(#rxg)" stroke-linecap="round" stroke-linejoin="round"><path d="M23.5 45V19" stroke-width="4.2"/><path d="M18.5 19h10M18.5 45h10" stroke-width="2"/><path d="M26 19h8a7.2 7.2 0 0 1 0 14.4H26" stroke-width="2.6"/><path d="M33 33.4 42.5 45" stroke-width="4.4"/><path d="M38.5 45h8" stroke-width="2"/></g><path d="M46 12.5l1.5 3.3 3.3 1.5-3.3 1.5L46 22.1l-1.5-3.3-3.3-1.5 3.3-1.5z" fill="url(#rxg)"/></svg></button>
+      <b>RAX AI</b><span class="sp"></span>
+      <button class="ib" id="collapseBtn" aria-label="Collapse sidebar" title="Collapse sidebar"></button>
+    </div>
+    <nav class="mainnav" aria-label="Main">
+      <button class="navi hl" id="newChat"></button>
+      <div class="navlbl">Features</div>
+      <button class="navi" id="navSearch"></button>
+      <button class="navi" id="navImage"></button>
+      <button class="navi" id="openProviders"></button>
+      <button class="navi" id="openSettings"></button>
+    </nav>
+    <div class="sbox" id="sbox" hidden><span id="searchIcon"></span><input id="search" type="search" placeholder="Search chats" aria-label="Search conversations"></div>
+    <nav id="chatlist" aria-label="Conversations"></nav>
+    <div class="side-foot">
+      <div class="upg"><div class="crown" id="crownIc"></div><b>Bring your own key</b><p>Connect a free AI provider to unlock fast, private chats on this device.</p><button class="upgbtn" id="upgBtn">Add API key</button></div>
+      <div class="profile"><div class="avatar">R</div><div class="pname">RAX AI<small>Free models · this device</small></div></div>
+    </div>
+  </aside>
+
+  <div id="col">
+    <header class="top">
+      <div class="tl"><button class="ib" id="menuBtn" aria-label="Open sidebar"></button><span class="pill" id="provPill" role="button" tabindex="0" title="Model options"></span></div>
+      <div class="seg2" role="tablist" aria-label="Mode"><button id="modeChat" class="on" role="tab">Chat</button><button id="modeImg" role="tab">Images</button></div>
+      <div class="tr">
+                <span class="badge hide-m" id="onlineBadge"></span>
+        <button class="gbtn" id="topSettings" aria-label="Configuration" title="Configuration"></button>
+        <button class="gbtn" id="exportBtn" aria-label="Export chat" title="Export chat as Markdown"></button>
+        <button class="ib" id="themeBtn" aria-label="Toggle theme"></button>
+      </div>
+    </header>
+    <main id="main">
+      <h1 id="title" class="sr">New chat</h1>
+      <div id="scroll" role="log" aria-live="polite"><div id="stage"></div></div>
+      <button id="toLatest" hidden aria-label="Scroll to latest message"></button>
+      <div class="composer-wrap">
+        <div class="hero-top" id="heroTop"><div class="orb" aria-hidden="true"></div><h2>Ready to Create Something New?</h2></div>
+        <div class="hero-chips" id="heroChips"></div>
+        <div class="composer">
+          <div id="atts"></div>
+          <div class="inrow"><span class="spk" id="spkIc"></span><textarea id="input" rows="1" placeholder="Ask Anything..." aria-label="Message"></textarea></div>
+          <input type="file" id="file" multiple hidden>
+          <div class="plusmenu" id="plusMenu" role="menu" hidden></div>
+          <div class="optpanel" id="optPanel" hidden>
+            <label class="of">Provider<select class="sel" id="provSel" aria-label="Provider"></select></label>
+            <label class="of">Model<select class="sel" id="modelSel" aria-label="Model" title="Choose a model, or leave on Auto"></select></label>
+            <label class="of">Image shape<select class="sel" id="aspSel" aria-label="Image shape" hidden><option value="square">Square</option><option value="landscape">Landscape</option><option value="portrait">Portrait</option></select></label>
+            <p class="tip">Leave the model on Auto to pick the best free one for you.</p>
+          </div>
+          <div class="tools2">
+            <button class="tb" id="attachBtn" aria-label="Attach file" title="Attach file"></button>
+            <button class="tb" id="setBtn" aria-label="Settings"></button>
+            <button class="tb" id="optBtn" aria-label="Options" aria-expanded="false"></button>
+            <span class="sp"></span>
+            <div class="rt">
+              <button class="ib" id="imgBtn" aria-label="Image generation mode" aria-pressed="false" hidden></button>
+              <button class="ib" id="micBtn" aria-label="Voice input" title="Voice input"></button>
+              <button id="send" aria-label="Send message"></button>
+            </div>
+          </div>
+        </div>
+        <div id="heroSug"></div>
+        <div class="hint">RAX AI can make mistakes, so check important information.</div>
+      </div>
+    </main>
+  </div>
+</div>
+<div id="toasts"></div>
+
+<script>
+"use strict";
+/* =====================================================================
+   RAX AI — single-file client. Sections:
+   1. Icons & helpers   2. Storage/state   3. Provider adapters
+   4. Markdown          5. UI rendering    6. Chat engine
+   7. Settings/wizard   8. Boot
+   ===================================================================== */
+
+/* ---------- 1. Icons & helpers ---------- */
+const ICONS={
+plus:'<path d="M12 5v14M5 12h14"/>',search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+menu:'<path d="M4 7h16M4 12h16M4 17h16"/>',settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+send:'<path d="M12 19V5M5 12l7-7 7 7"/>',stop:'<rect x="6" y="6" width="12" height="12" rx="2"/>',
+clip:'<path d="m21 11-8.6 8.6a5 5 0 0 1-7-7L14 4a3.3 3.3 0 0 1 4.7 4.7l-8.6 8.6a1.7 1.7 0 0 1-2.4-2.4L15 7"/>',
+mic:'<rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
+copy:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>',
+refresh:'<path d="M20 11A8 8 0 0 0 5.6 6.3L4 8M4 4v4h4M4 13a8 8 0 0 0 14.4 4.7L20 16M20 20v-4h-4"/>',
+edit:'<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/>',
+up:'<path d="M7 11v9H4v-9zM7 11l4-8a2 2 0 0 1 3 2l-1 4h6a2 2 0 0 1 2 2.3l-1.3 7A2 2 0 0 1 17.7 20H7"/>',
+down:'<path d="M17 13V4h3v9zM17 13l-4 8a2 2 0 0 1-3-2l1-4H5a2 2 0 0 1-2-2.3l1.300-7A2 2 0 0 1 6.300 4H17"/>',
+trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/>',
+pin:'<path d="M12 17v5M8 3h8l-1 6 3 4H6l3-4z"/>',
+panel:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/>',
+key:'<circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M16 7l3 3"/>',
+check:'<path d="m5 12 5 5 9-10"/>',x:'<path d="M6 6l12 12M18 6 6 18"/>',
+eye:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+eyeoff:'<path d="M3 3l18 18M10.6 5.1A9.700 9.700 0 0 1 12 5c6 0 10 7 10 7a17 17 0 0 1-3.200 3.900M6.600 6.600A17 17 0 0 0 2 12s4 7 10 7a9.800 9.800 0 0 0 4.200-.9"/>',
+arrowdown:'<path d="M12 5v14m-6-6 6 6 6-6"/>',
+sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.900 4.900l1.400 1.400M17.700 17.700l1.400 1.400M2 12h2M20 12h2M4.900 19.100l1.400-1.400M17.700 6.300l1.400-1.400"/>',
+moon:'<path d="M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z"/>',
+plug:'<path d="M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0zM12 18v4"/>',
+ext:'<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
+image:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 8"/>',
+download:'<path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/>'};
+Object.assign(ICONS,{zsliders:'<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>',zgrid:'<rect x="4" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6"/>',zspark:'<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M18.5 15.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>',zexport:'<path d="M12 15V4m-4 4 4-4 4 4M5 14v5h14v-5"/>',zcrown:'<path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/>',zplan:'<path d="M7 4h10a2 2 0 0 1 2 2v14H5V6a2 2 0 0 1 2-2zM9 9h6M9 13h6M9 17h3"/>',zbulb:'<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.900c.6.5 1 1.200 1 2.100h5c0-.9.4-1.600 1-2.100A6 6 0 0 0 12 3z"/>',zslides:'<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8"/>',home:'<path d="M3 11 12 3l9 8M5 10v10h5v-6h4v6h5V10"/>',code:'<path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/>',book:'<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 19V5M9 7h6"/>',translate:'<path d="M4 6h9M8.5 4v2M6 6c0 4 3 7 6 8M12 6c0 3-3 6-7 8M13 20l4-9 4 9M14.5 17h5"/>',doc:'<path d="M6 3h8l4 4v14H6zM14 3v4h4M9 12h6M9 16h6"/>',bulb:'<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.900c.6.5 1 1.200 1 2.100h5c0-.9.4-1.600 1-2.100A6 6 0 0 0 12 3z"/>',pen:'<path d="M4 20h4L19 9a2.800 2.800 0 0 0-4-4L4 16zM13.500 6.500l4 4"/>',upload:'<path d="M12 16V4m-5 5 5-5 5 5M5 20h14"/>',spark:'<path d="M12 3l1.800 5.200L19 10l-5.200 1.800L12 17l-1.800-5.200L5 10l5.200-1.800z"/>',crown:'<path d="M3 8l4 4 5-7 5 7 4-4-2 11H5z"/>'});
+const ic=(n,extra='')=>`<svg class="i ${extra}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]||''}</svg>`;
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const LOGO='<svg viewBox="0 0 64 64" role="img" aria-label="RAX AI"><defs><linearGradient id="rxg" x1="10" y1="6" x2="54" y2="58" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#f8e6b0"/><stop offset=".5" stop-color="#d9ac58"/><stop offset="1" stop-color="#9a6c26"/></linearGradient><radialGradient id="rxb" cx="32" cy="26" r="36" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#26221a"/><stop offset="1" stop-color="#09090a"/></radialGradient></defs><circle cx="32" cy="32" r="30" fill="url(#rxb)" stroke="url(#rxg)" stroke-width="2"/><circle cx="32" cy="32" r="26" fill="none" stroke="url(#rxg)" stroke-width=".7" opacity=".45"/><g fill="none" stroke="url(#rxg)" stroke-linecap="round" stroke-linejoin="round"><path d="M23.5 45V19" stroke-width="4.2"/><path d="M18.5 19h10M18.5 45h10" stroke-width="2"/><path d="M26 19h8a7.2 7.2 0 0 1 0 14.4H26" stroke-width="2.6"/><path d="M33 33.4 42.5 45" stroke-width="4.4"/><path d="M38.5 45h8" stroke-width="2"/></g><path d="M46 12.5l1.5 3.3 3.3 1.5-3.3 1.5L46 22.1l-1.5-3.3-3.3-1.5 3.3-1.5z" fill="url(#rxg)"/></svg>';
+function toast(msg,ms=2200){const t=document.createElement('div');t.className='toast';t.textContent=msg;$('#toasts').appendChild(t);setTimeout(()=>t.remove(),ms)}
+async function copyText(text){
+  try{await navigator.clipboard.writeText(text);toast('Copied');return true}catch(e){}
+  const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();
+  let ok=false;try{ok=document.execCommand('copy')}catch(e){}ta.remove();toast(ok?'Copied':'Copy failed. Select the text and copy it manually.');return ok}
+
+/* generated images live in IndexedDB so chat history in localStorage stays small */
+const IDB={_db:null,
+  open(){return this._db||(this._db=new Promise((res,rej)=>{try{const r=indexedDB.open('rax-ai',1);r.onupgradeneeded=()=>r.result.createObjectStore('img');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}}))},
+  async put(k,v){try{const db=await this.open();db.transaction('img','readwrite').objectStore('img').put(v,k)}catch(e){}},
+  async get(k){try{const db=await this.open();return await new Promise(res=>{const q=db.transaction('img').objectStore('img').get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>res(null)})}catch(e){return null}},
+  async del(k){try{const db=await this.open();db.transaction('img','readwrite').objectStore('img').delete(k)}catch(e){}}};
+const purgeImages=ch=>{(ch.messages||[]).forEach(m=>(m.images||[]).forEach(i=>{IDB.del(i.id);delete S.imgCache[i.id]}))};
+
+/* ---------- 2. Storage / state ---------- */
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+          set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}},
+          del(k){try{localStorage.removeItem(k)}catch(e){}}};
+const DEFAULT_SETTINGS={theme:'dark',defaultProvider:null,freeOnly:true,imageProvider:null,stream:true,rememberKeys:false,backendMode:false,backendUrl:'',voiceLang:'en-US',wizardDone:false,providers:{}};
+const S={
+  chats:LS.get('rax.chats',[]),
+  activeId:null,
+  settings:Object.assign({},DEFAULT_SETTINGS,LS.get('rax.settings',{}),{freeOnly:true}),
+  keys:{},               // in-memory API keys (session only unless "remember" is on)
+  models:{},             // cached model lists per provider
+  gen:null,              // current generation {abort,chatId}
+  sessionRequests:0,
+  lastError:null,
+  attachments:[],
+  editingId:null,
+  imageMode:false,detailed:false,imgModels:{},imgFailed:{},imgLoading:{},imgCache:{}
+};
+if(S.settings.rememberKeys)S.keys=LS.get('rax.keys',{});
+const saveChats=()=>{if(!LS.set('rax.chats',S.chats))toast('Storage is full. Delete old chats to keep saving.')};
+const saveSettings=()=>LS.set('rax.settings',S.settings);
+const saveKeys=()=>{if(S.settings.rememberKeys)LS.set('rax.keys',S.keys);else LS.del('rax.keys')};
+const activeChat=()=>S.chats.find(c=>c.id===S.activeId)||null;
+
+/* ---------- 3. Provider adapters ---------- */
+const PROVIDERS={
+  gemini:{name:'Google Gemini',kind:'gemini',base:'https://generativelanguage.googleapis.com/v1beta',
+    desc:'Google AI Studio models. A free tier exists, with limits set by Google.',
+    keyUrl:'https://aistudio.google.com/app/apikey',docs:'https://ai.google.dev/gemini-api/docs',
+    caps:{stream:true,vision:true,files:true},defaultModel:'gemini-2.0-flash'},
+  openrouter:{name:'OpenRouter',kind:'openai',base:'https://openrouter.ai/api/v1',
+    desc:'One key for many models. Some models are offered free, and these change over time.',
+    keyUrl:'https://openrouter.ai/keys',docs:'https://openrouter.ai/docs',
+    caps:{stream:true,vision:true,files:true},defaultModel:''},
+  groq:{name:'Groq',kind:'openai',base:'https://api.groq.com/openai/v1',
+    desc:'Very fast inference. Models and limits depend on your current Groq plan.',
+    keyUrl:'https://console.groq.com/keys',docs:'https://console.groq.com/docs',
+    caps:{stream:true,vision:false,files:true},defaultModel:''},
+  cerebras:{name:'Cerebras',kind:'openai',base:'https://api.cerebras.ai/v1',
+    desc:'Fast inference for eligible models, depending on your developer plan.',
+    keyUrl:'https://cloud.cerebras.ai/',docs:'https://inference-docs.cerebras.ai/',
+    caps:{stream:true,vision:false,files:true},defaultModel:''},
+  custom:{name:'Custom (OpenAI-compatible)',kind:'openai',base:'',custom:true,
+    desc:'Any endpoint that follows the OpenAI chat completions format, such as a local server.',
+    keyUrl:'',docs:'https://platform.openai.com/docs/api-reference/chat',
+    caps:{stream:true,vision:true,files:true},defaultModel:''}
+};
+['gemini','openrouter'].forEach(id=>{PROVIDERS[id].image=true});
+PROVIDERS.pollinations={name:'Pollinations (free, no key)',kind:'image',imageOnly:true,noKey:true,image:true,base:'',
+  desc:'Free image generation with no API key. Anonymous use is rate limited (about one image every 15 seconds) and images may carry a watermark.',
+  keyUrl:'',docs:'https://github.com/pollinations/pollinations',caps:{stream:false,vision:false,files:false}};
+
+(function(){const O=(name,base,desc,keyUrl,docs,x)=>Object.assign({name,kind:'openai',base,desc,keyUrl,docs,caps:{stream:true,vision:false,files:true},defaultModel:''},x||{});
+Object.assign(PROVIDERS,{
+  mistral:O('Mistral AI','https://api.mistral.ai/v1','Mistral models. A free "Experiment" tier exists with strict limits set by Mistral.','https://console.mistral.ai/api-keys','https://docs.mistral.ai/'),
+  sambanova:O('SambaNova','https://api.sambanova.ai/v1','Very fast open-model inference. A free tier with rate limits is offered.','https://cloud.sambanova.ai/apis','https://docs.sambanova.ai/'),
+  nvidia:O('NVIDIA NIM','https://integrate.api.nvidia.com/v1','Hosted open models. Developers get free credits, with limits set by NVIDIA.','https://build.nvidia.com/','https://docs.api.nvidia.com/'),
+  huggingface:O('Hugging Face','https://router.huggingface.co/v1','Open models through the Hugging Face router. Free monthly credits, limits set by Hugging Face.','https://huggingface.co/settings/tokens','https://huggingface.co/docs/inference-providers'),
+  ollama:O('Ollama (local)','http://localhost:11434/v1','Run models on your own computer. Free, no key. Works when you open index.html from your computer (browsers block http://localhost from https pages). Start Ollama with OLLAMA_ORIGINS=* if the browser is refused.','','https://ollama.com/',{noKey:true,local:true}),
+  lmstudio:O('LM Studio (local)','http://localhost:1234/v1','Run models on your own computer. Free, no key. Turn on "Enable CORS" in the LM Studio server settings.','','https://lmstudio.ai/docs',{noKey:true,local:true})
+});
+const order=['gemini','openrouter','groq','cerebras','mistral','sambanova','nvidia','huggingface','ollama','lmstudio','custom','pollinations'];
+const o={};order.forEach(k=>{if(PROVIDERS[k])o[k]=PROVIDERS[k]});Object.keys(PROVIDERS).forEach(k=>{if(!o[k])o[k]=PROVIDERS[k]});
+Object.keys(PROVIDERS).forEach(k=>delete PROVIDERS[k]);Object.assign(PROVIDERS,o)})();
+const TEXT_IDS=()=>Object.keys(PROVIDERS).filter(id=>!PROVIDERS[id].imageOnly);
+const DETAIL_ADD=' The user turned on Detailed answers: think step by step, be thorough, explain your reasoning and give complete, well-structured answers.';
+const sysPrompt=()=>SYSTEM_PROMPT+(S.detailed?DETAIL_ADD:'');
+const SYSTEM_PROMPT="You are RAX AI, a helpful, accurate and friendly general-purpose assistant. Reply in the language the user writes in, including Bangla. Use Markdown for structure and fenced code blocks with a language tag for code. Be clear and concise, and say so when you are unsure.";
+const pcfg=id=>(S.settings.providers[id]=S.settings.providers[id]||{model:'',customBase:'',status:'untested',lastError:'',lastOk:0});
+const hasKey=id=>PROVIDERS[id].noKey||S.settings.backendMode||!!S.keys[id]||(PROVIDERS[id].custom&&!!pcfg(id).customBase);
+const isUsable=id=>hasKey(id)&&!(S.settings.freeOnly&&PROVIDERS[id].paid)&&(!PROVIDERS[id].custom||!!pcfg(id).model)&&(!PROVIDERS[id].local||pcfg(id).status==='ok');
+const baseOf=id=>PROVIDERS[id].custom?pcfg(id).customBase.replace(/\/+$/,''):PROVIDERS[id].base;
+const redact=(s,id)=>{let t=String(s||'');const k=S.keys[id];if(k&&k.length>5)t=t.split(k).join('***');return t.replace(/(sk-|gsk_|AIza|csk-)[A-Za-z0-9_\-]{8,}/g,'$1***')};
+
+class ProviderError extends Error{constructor(msg,status,kind){super(msg);this.status=status;this.kind=kind}}
+async function normalizeHttpError(id,res){
+  let detail='';try{const j=await res.clone().json();detail=j?.error?.message||j?.message||(typeof j?.error==='string'?j.error:'')||''}catch(e){try{detail=(await res.text()).slice(0,200)}catch(_){}}
+  detail=redact(detail,id).slice(0,300);
+  let msg,kind='http';
+  if(res.status===400)msg='The provider rejected the request. '+(detail||'Check the model name and your input.');
+  else if(res.status===401||res.status===403){kind='auth';msg='The API key was rejected. Check that it is correct, active, and allowed to use this model.'}
+  else if(res.status===404)msg='Model or endpoint not found. Pick another model or check the endpoint URL.';
+  else if(res.status===408||res.status===504)msg='The provider timed out. Try again.';
+  else if(res.status===429){kind='quota';msg='Rate limit or free quota reached. Wait a moment, choose another model, or switch provider.'}
+  else if(res.status>=500)msg='The provider had a server error ('+res.status+'). Try again shortly.';
+  else msg='Request failed ('+res.status+').';
+  if(detail&&![400].includes(res.status))msg+=' Provider says: '+detail;
+  return new ProviderError(msg,res.status,kind)}
+function normalizeError(id,e){
+  if(e instanceof ProviderError)return e;
+  if(e&&e.name==='AbortError')return Object.assign(new ProviderError('Stopped.',0,'abort'));
+  const offline=typeof navigator!=='undefined'&&navigator.onLine===false;
+  return new ProviderError(offline?'You appear to be offline.':'Could not reach the provider. If you are viewing the published preview page, chat cannot work there because it blocks network requests. Download index.html and open it in Chrome or Edge. Otherwise check your connection, VPN or ad blocker, and the endpoint URL (or use backend mode from the README).',0,'network')}
+
+/* transport: browser-direct (BYOK) or via the RAX backend proxy */
+function transport(id,path,init={}){
+  const p=PROVIDERS[id],headers=Object.assign({},init.headers||{});
+  if(S.settings.backendMode){
+    const root=(S.settings.backendUrl||'').replace(/\/+$/,'');
+    return fetch(`${root}/api/p/${id}/${path}`,Object.assign({},init,{headers}))}
+  const key=S.keys[id];
+  if(p.kind==='gemini'){if(key)headers['x-goog-api-key']=key}
+  else if(key)headers['Authorization']='Bearer '+key;
+  if(id==='openrouter'){headers['X-Title']='RAX AI'}
+  return fetch(`${baseOf(id)}/${path}`,Object.assign({},init,{headers}))}
+
+async function* sseLines(res,signal){
+  const reader=res.body.getReader(),dec=new TextDecoder();let buf='';
+  while(true){
+    if(signal?.aborted)throw new DOMException('Aborted','AbortError');
+    const {done,value}=await reader.read();if(done)break;
+    buf+=dec.decode(value,{stream:true});
+    let i;while((i=buf.search(/\r?\n/))>=0){const line=buf.slice(0,i);buf=buf.slice(i+(buf[i]==='\r'?2:1));if(line.startsWith('data:'))yield line.slice(5).trim()}}
+  if(buf.startsWith('data:'))yield buf.slice(5).trim()}
+
+function toWire(id,messages){
+  const kind=PROVIDERS[id].kind;
+  const msgs=messages.filter(m=>m.role==='user'||m.role==='assistant').map(m=>{
+    let text=m.content||'';const imgs=[];
+    for(const a of m.attachments||[]){
+      if(a.text!=null)text+=`\n\n[Attached file: ${a.name}]\n\`\`\`\n${a.text}\n\`\`\``;
+      else if(a.dataUrl)imgs.push(a)}
+    return {role:m.role,text,imgs}});
+  if(kind==='gemini')return msgs.map(m=>({role:m.role==='user'?'user':'model',parts:[{text:m.text||' '},...m.imgs.map(a=>({inline_data:{mime_type:a.type,data:a.dataUrl.split(',')[1]}}))]}));
+  return [{role:'system',content:sysPrompt()},...msgs.map(m=>({role:m.role,content:m.imgs.length?[{type:'text',text:m.text||' '},...m.imgs.map(a=>({type:'image_url',image_url:{url:a.dataUrl}}))]:m.text}))]}
+
+const Adapters={
+  async validateConfiguration(id){
+    try{const list=await Adapters.listModels(id);return {ok:true,models:list}}
+    catch(e){return {ok:false,error:normalizeError(id,e)}}},
+  getCapabilities(id){return PROVIDERS[id].caps},
+  normalizeError,
+  async listModels(id){
+    const p=PROVIDERS[id];
+    const res=await transport(id,'models'+(p.kind==='gemini'?'?pageSize=200':''));
+    if(!res.ok)throw await normalizeHttpError(id,res);
+    const j=await res.json();let out=[];
+    if(p.kind==='gemini'){
+      out=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')).map(m=>({id:m.name.replace(/^models\//,''),label:m.displayName||m.name}))
+        .filter(m=>/gemini|gemma/i.test(m.id)&&!/embedding|aqa|imagen|tts|image/i.test(m.id));
+    }else{
+      out=(Array.isArray(j)?j:(j.data||j.models||[])).map(m=>{
+        const free=m.pricing&&Number(m.pricing.prompt)===0&&Number(m.pricing.completion)===0;
+        return {id:m.id,label:(m.name||m.id)+(free?' (free)':''),free}}).filter(m=>m.id&&!/embed|whisper|tts|guard|moderation/i.test(m.id));
+      if(id==='openai')out=out.filter(m=>/^(gpt|chatgpt|o\d)/i.test(m.id)&&!/realtime|audio|transcribe|image|search|instruct|codex|davinci|babbage/i.test(m.id));
+      out.sort((a,b)=>(b.free?1:0)-(a.free?1:0)||a.id.localeCompare(b.id))}
+    if(S.settings.freeOnly){
+      // Free-only filter. OpenRouter reports prices, so it is exact. Gemini, Groq and Cerebras have free tiers
+      // that cover their listed models (with rate limits), except Gemini Pro-class models, which are hidden.
+      if(id==='openrouter')out=out.filter(m=>m.free);
+      else if(id==='gemini')out=out.filter(m=>!/pro/i.test(m.id));
+      if(!out.length)throw new ProviderError('No free models were found for this key. Turn off "Show only free models" in Settings > General to see all models.',200,'empty')}
+    S.models[id]=out;return out},
+  async sendMessage(id,messages,signal){let t='';await Adapters.streamMessage(id,messages,d=>{t+=d},signal,false);return t},
+  /* streamMessage: calls onDelta(textChunk); with stream=false it requests one full reply */
+  async streamMessage(id,messages,onDelta,signal,stream=true,model0){
+    const p=PROVIDERS[id],model=model0||rankModels(id,'chat')[0]||pcfg(id).model,wire=toWire(id,messages);
+    const timeout=new AbortController();const tm=setTimeout(()=>timeout.abort(),120000);
+    const link=()=>{if(signal)signal.addEventListener('abort',()=>timeout.abort(),{once:true})};link();
+    try{
+      let res;
+      if(p.kind==='gemini'){
+        const body={contents:wire,systemInstruction:{parts:[{text:sysPrompt()}]}};
+        const path=`models/${encodeURIComponent(model)}:${stream?'streamGenerateContent?alt=sse':'generateContent'}`;
+        res=await transport(id,path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:timeout.signal});
+        if(!res.ok)throw await normalizeHttpError(id,res);
+        if(stream){let any=false;for await(const d of sseLines(res,timeout.signal)){if(!d||d==='[DONE]')continue;let j;try{j=JSON.parse(d)}catch(e){continue}
+            const parts=j.candidates?.[0]?.content?.parts||[];const t=parts.map(x=>x.text||'').join('');if(t){any=true;onDelta(t)}
+            if(j.promptFeedback?.blockReason)throw new ProviderError('The prompt was blocked by the provider ('+j.promptFeedback.blockReason+').',400,'blocked')}
+          if(!any)throw new ProviderError('The model returned an empty reply. Try rephrasing or choose another model.',200,'empty')}
+        else{const j=await res.json();const t=(j.candidates?.[0]?.content?.parts||[]).map(x=>x.text||'').join('');if(!t)throw new ProviderError('The model returned an empty reply.',200,'empty');onDelta(t)}
+      }else{
+        const body={model,messages:wire,stream};
+        res=await transport(id,'chat/completions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:timeout.signal});
+        if(!res.ok)throw await normalizeHttpError(id,res);
+        if(stream){let any=false;for await(const d of sseLines(res,timeout.signal)){if(!d||d==='[DONE]')continue;let j;try{j=JSON.parse(d)}catch(e){continue}
+            if(j.error)throw new ProviderError(redact(j.error.message||'Provider error',id),0,'http');
+            const t=j.choices?.[0]?.delta?.content;if(t){any=true;onDelta(t)}}
+          if(!any)throw new ProviderError('The model returned an empty reply. Try rephrasing or choose another model.',200,'empty')}
+        else{const j=await res.json();const t=j.choices?.[0]?.message?.content;if(!t)throw new ProviderError('The model returned an empty reply.',200,'empty');onDelta(t)}}
+    }catch(e){throw normalizeError(id,(signal?.aborted)?Object.assign(new Error(),{name:'AbortError'}):e)}
+    finally{clearTimeout(tm)}},
+  async listImageModels(id){
+    if(id==='pollinations')return S.imgModels[id]=[{id:'flux',label:'Flux (free)'},{id:'turbo',label:'Turbo (free)'}];
+    if(S.settings.freeOnly&&(id==='openai'||id==='gemini'))return S.imgModels[id]=[];
+    if(id==='openai')return S.imgModels[id]=[{id:'gpt-image-1',label:'GPT Image 1 (paid)'},{id:'dall-e-3',label:'DALL·E 3 (paid)'},{id:'dall-e-2',label:'DALL·E 2 (paid)'}];
+    const res=await transport(id,'models'+(id==='gemini'?'?pageSize=200':''));
+    if(!res.ok)throw await normalizeHttpError(id,res);
+    const j=await res.json();let out=[];
+    if(id==='gemini')out=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')&&/image/i.test(m.name)&&!/imagen/i.test(m.name)).map(m=>({id:m.name.replace(/^models\//,''),label:m.displayName||m.name}));
+    else out=(j.data||[]).filter(m=>(m.architecture?.output_modalities||[]).includes('image')).map(m=>{const free=m.pricing&&Number(m.pricing.prompt)===0&&Number(m.pricing.completion)===0;return {id:m.id,label:(m.name||m.id)+(free?' (free)':''),free}}).sort((a,b)=>(b.free?1:0)-(a.free?1:0));
+    if(S.settings.freeOnly&&id==='openrouter')out=out.filter(m=>m.free);
+    if(!out.length)throw new ProviderError('No image models were found for this key'+(S.settings.freeOnly?' while "Show only free models" is on. Turn it off in Settings > General to see paid ones.':'.'),200,'empty');
+    S.imgModels[id]=out;return out},
+  async generateImage(id,prompt,opts,signal){
+    const model=opts.model,aspect=opts.aspect||'square';
+    const hint={square:'square 1:1',landscape:'landscape 3:2',portrait:'portrait 2:3'}[aspect];
+    const tc=new AbortController();const tm=setTimeout(()=>tc.abort(),180000);
+    if(signal)signal.addEventListener('abort',()=>tc.abort(),{once:true});
+    const post=(p,body)=>transport(id,p,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:tc.signal});
+    try{
+      const images=[];let text='';
+      if(id==='pollinations'){
+        const dims={square:[1024,1024],landscape:[1216,832],portrait:[832,1216]}[aspect];
+        const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt.slice(0,1500))}?model=${encodeURIComponent(model)}&width=${dims[0]}&height=${dims[1]}&seed=${Math.floor(Math.random()*1e9)}&referrer=rax-ai`;
+        try{
+          const res=await fetch(url,{signal:tc.signal});
+          if(!res.ok)throw await normalizeHttpError(id,res);
+          const blob=await res.blob();
+          if(!/^image\//.test(blob.type))throw new ProviderError('The image service did not return an image. Try again in a moment.',200,'empty');
+          images.push(await new Promise((ok,no)=>{const fr=new FileReader();fr.onload=()=>ok(fr.result);fr.onerror=no;fr.readAsDataURL(blob)}));
+        }catch(e){
+          if(e instanceof ProviderError||e.name==='AbortError')throw e;
+          // Browser blocked the fetch (CORS): load the image directly in an <img> instead.
+          await new Promise((ok,no)=>{const im=new Image();const t=setTimeout(()=>no(new ProviderError('The free image service timed out. Wait 15 seconds and try again.',0,'network')),90000);
+            im.onload=()=>{clearTimeout(t);ok()};im.onerror=()=>{clearTimeout(t);no(new ProviderError('The free image service could not be reached or is busy. Wait 15 seconds and try again.',0,'network'))};im.src=url});
+          images.push(url)}
+      }else if(id==='openai'){
+        const body={model,prompt,n:1,size:{square:'1024x1024',landscape:'1536x1024',portrait:'1024x1536'}[aspect]};
+        if(model.startsWith('dall-e'))body.response_format='b64_json';
+        if(model==='dall-e-3'&&aspect!=='square')body.size=aspect==='landscape'?'1792x1024':'1024x1792';
+        if(model==='dall-e-2')body.size='1024x1024';
+        const res=await post('images/generations',body);if(!res.ok)throw await normalizeHttpError(id,res);
+        const j=await res.json();for(const d of j.data||[]){if(d.b64_json)images.push('data:image/png;base64,'+d.b64_json);else if(d.url)images.push(d.url)}
+      }else if(id==='gemini'){
+        const res=await post(`models/${encodeURIComponent(model)}:generateContent`,{contents:[{role:'user',parts:[{text:prompt+`\n\n(Aspect ratio: ${hint}.)`}]}],generationConfig:{responseModalities:['TEXT','IMAGE']}});
+        if(!res.ok)throw await normalizeHttpError(id,res);
+        const j=await res.json();
+        for(const p of j.candidates?.[0]?.content?.parts||[]){const d=p.inlineData||p.inline_data;if(d?.data)images.push(`data:${d.mimeType||d.mime_type||'image/png'};base64,${d.data}`);else if(p.text)text+=p.text}
+        if(!images.length&&j.promptFeedback?.blockReason)throw new ProviderError('The prompt was blocked by the provider ('+j.promptFeedback.blockReason+').',400,'blocked');
+      }else{
+        const res=await post('chat/completions',{model,messages:[{role:'user',content:prompt+`\n\n(Aspect ratio: ${hint}.)`}],modalities:['image','text']});
+        if(!res.ok)throw await normalizeHttpError(id,res);
+        const j=await res.json();const msg=j.choices?.[0]?.message||{};
+        for(const im of msg.images||[]){const u=im.image_url?.url||im.url;if(u)images.push(u)}
+        text=typeof msg.content==='string'?msg.content:''}
+      if(!images.length)throw new ProviderError('The model did not return an image.'+(text?' It said: '+text.slice(0,200):' Try rephrasing the prompt or choose another model.'),200,'empty');
+      return {images,text}
+    }catch(e){throw normalizeError(id,signal?.aborted?Object.assign(new Error(),{name:'AbortError'}):e)}
+    finally{clearTimeout(tm)}},
+  cancelGeneration(){if(S.gen)S.gen.abort.abort()}
+};
+
+/* ---------- Auto model selection (chat, coding, image) ---------- */
+const PREF={
+  gemini:{chat:[/flash(?!.*(lite|image|thinking|tts|live))/,/flash/],code:[/pro(?!.*(image|tts|live))/,/flash(?!.*(lite|image|thinking|tts|live))/,/flash/]},
+  groq:{chat:[/llama-3\.3-70b/,/llama.*70b/,/gpt-oss-120b/,/llama/],code:[/gpt-oss-120b/,/qwen.*(coder|32b)/,/llama-3\.3-70b/,/llama.*70b/]},
+  cerebras:{chat:[/llama.*70b/,/gpt-oss/,/llama/],code:[/qwen.*(coder|480|235)/,/gpt-oss/,/llama.*70b/]},
+  openrouter:{chat:[/llama.*(70b|3\.3)/,/gemini.*flash/,/deepseek.*(chat|v3)/,/qwen/,/mistral/,/gemma/],code:[/qwen.*coder/,/deepseek.*(coder|chat|v3|r1)/,/llama.*70b/,/gemini.*flash/]}};
+Object.assign(PREF,{mistral:{chat:[/mistral-large/,/mistral-medium/,/mistral-small/,/mistral/],code:[/codestral/,/mistral-large/,/mistral-medium/]},
+  sambanova:{chat:[/llama.*(3\.3|70b)/i,/llama/i,/qwen/i],code:[/qwen.*coder/i,/deepseek/i,/llama.*70b/i]},
+  nvidia:{chat:[/llama.*(3\.3|70b)/,/nemotron/,/llama/],code:[/coder/,/llama.*70b/,/nemotron/]},
+  huggingface:{chat:[/llama.*(70b|3\.3)/i,/qwen.*(72b|32b)/i,/gpt-oss/i],code:[/coder/i,/qwen/i,/llama.*70b/i]},
+  ollama:{chat:[/llama3/,/qwen/,/mistral/,/gemma/],code:[/coder/,/qwen/,/llama3/]},lmstudio:{chat:[/./],code:[/coder/,/./]}});
+const IMG_PREF={gemini:[/flash-image/,/image/],pollinations:[/flux/,/./]};
+const natural=(a,b)=>b.localeCompare(a,undefined,{numeric:true});
+const stableId=id=>!/preview|exp|latest|beta/i.test(id);
+function rankModels(id,task){
+  const list=(S.models[id]||[]).map(m=>m.id);const out=[];
+  for(const re of (PREF[id]?.[task]||[])){
+    const m=list.filter(x=>re.test(x)).sort((a,b)=>(stableId(b)-stableId(a))||natural(a,b));
+    for(const x of m)if(!out.includes(x))out.push(x);
+    if(out.length>=3)break}
+  const fb=pcfg(id).model||PROVIDERS[id].defaultModel;
+  if(fb&&!out.includes(fb)&&(!list.length||list.includes(fb)||PROVIDERS[id].custom))out.push(fb);
+  if(!out.length&&list[0])out.push(list[0]);
+  return out.slice(0,3)}
+async function ensureModels(id){
+  if(S.models[id]||PROVIDERS[id].custom)return;
+  try{await Adapters.listModels(id)}catch(e){}}
+async function bestImageModel(id){
+  let list=S.imgModels[id];
+  if(!list){try{list=await Adapters.listImageModels(id)}catch(e){list=[]}}
+  const ids=list.map(m=>m.id);
+  if(id==='openrouter')return ids[0]||null;
+  for(const re of IMG_PREF[id]||[/./]){const m=ids.filter(x=>re.test(x)).sort((a,b)=>(stableId(b)-stableId(a))||natural(a,b));if(m.length)return m[0]}
+  return null}
+function detectTask(text,atts){
+  const t=(text||'').toLowerCase();
+  if(/```/.test(text||'')||(atts||[]).some(a=>a.text!=null&&/\.(js|ts|jsx|tsx|py|java|c|cpp|cs|go|rs|php|rb|sh|sql|html|css)$/i.test(a.name)))return 'code';
+  if(/\b(code|coding|function|bug|debug|error|exception|stack ?trace|compile|syntax|script|program|algorithm|regex|api|sql|query|python|javascript|typescript|java|c\+\+|c#|html|css|react|node|django|flask|json|git|docker|bash|terminal|class|variable|refactor|unit test|website|app|backend|frontend)\b/.test(t))return 'code';
+  return 'chat'}
+function wantsImage(text){
+  const t=(text||'').toLowerCase();
+  if(/\b(html|css|svg|code|script|function|tag|component|diagram|chart|prompt)\b/.test(t))return false;
+  return /\b(generate|create|make|draw|design|paint|render|produce|show me)\b[^.?!\n]{0,40}\b(image|images|picture|pictures|photo|photos|illustration|artwork|wallpaper|portrait|logo|poster|avatar)\b/.test(t)||/\bai (photo|image|picture|art)\b/.test(t)||/ছবি\s*(বানাও|তৈরি|আঁকো|দাও)|ফটো\s*(বানাও|তৈরি)/.test(text||'')}
+
+/* ---------- 4. Markdown (safe, dependency-free) ---------- */
+const KW='abstract|as|async|await|break|case|catch|class|const|continue|def|default|del|do|elif|else|enum|except|export|extends|false|final|finally|fn|for|from|func|function|if|implements|import|in|interface|is|lambda|let|match|new|nil|none|None|not|null|of|or|and|package|pass|pub|raise|return|self|static|struct|super|switch|this|throw|true|True|False|try|type|typeof|undefined|use|var|void|while|with|yield|SELECT|FROM|WHERE|INSERT|UPDATE|DELETE|JOIN|CREATE|TABLE';
+function highlight(code,lang){
+  lang=(lang||'').toLowerCase();
+  if(['html','xml','svg'].includes(lang))return esc(code).replace(/(&lt;\/?)([\w-]+)/g,'$1<span class="tk-k">$2</span>');
+  const hash=['py','python','sh','bash','shell','yaml','yml','rb','ruby','toml','ini','r'].includes(lang);
+  const cm=hash?'#[^\\n]*':'\\/\\/[^\\n]*|\\/\\*[\\s\\S]*?\\*\\/'+(lang==='sql'?'|--[^\\n]*':'');
+  const re=new RegExp(`(${cm})|("(?:\\\\.|[^"\\\\\\n])*"|'(?:\\\\.|[^'\\\\\\n])*'|\`(?:\\\\.|[^\`\\\\])*\`)|\\b(\\d+(?:\\.\\d+)?)\\b|\\b(${KW})\\b`,'g');
+  let out='',last=0,m;
+  while((m=re.exec(code))){out+=esc(code.slice(last,m.index));
+    const cls=m[1]?'tk-c':m[2]?'tk-s':m[3]?'tk-n':'tk-k';out+=`<span class="${cls}">${esc(m[0])}</span>`;last=m.index+m[0].length;if(m[0].length===0)re.lastIndex++}
+  return out+esc(code.slice(last))}
+function inline(s){
+  const codes=[];s=s.replace(/`([^`\n]+)`/g,(_,c)=>{codes.push(c);return `\u0000${codes.length-1}\u0000`});
+  s=esc(s);
+  s=s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,(_,t,u)=>`<a href="${u}" target="_blank" rel="noopener noreferrer">${t}</a>`);
+  s=s.replace(/\*\*([^*\n]+)\*\*|__([^_\n]+)__/g,(_,a,b)=>`<strong>${a||b}</strong>`);
+  s=s.replace(/(^|[^*\w])\*([^*\n]+)\*(?!\w)/g,'$1<em>$2</em>').replace(/(^|[^_\w])_([^_\n]+)_(?!\w)/g,'$1<em>$2</em>');
+  s=s.replace(/~~([^~\n]+)~~/g,'<del>$1</del>');
+  return s.replace(/\u0000(\d+)\u0000/g,(_,i)=>`<code>${esc(codes[i])}</code>`)}
+function renderMarkdown(src,streaming){
+  const lines=String(src).replace(/\r\n/g,'\n').split('\n');let html='',i=0,para=[];
+  const flush=()=>{if(para.length){html+=`<p>${inline(para.join('\n')).replace(/\n/g,'<br>')}</p>`;para=[]}};
+  while(i<lines.length){
+    const ln=lines[i];let m;
+    if((m=ln.match(/^\s*```\s*([\w+#.-]*)\s*$/))){flush();const lang=m[1];const buf=[];i++;
+      while(i<lines.length&&!/^\s*```\s*$/.test(lines[i])){buf.push(lines[i]);i++}
+      const closed=i<lines.length;i++;const code=buf.join('\n');
+      html+=`<div class="codeblk"><div class="ch"><span>${esc(lang||'text')}</span><button data-act="copy-code" aria-label="Copy code">${ic('copy')}<span>Copy code</span></button></div><pre><code>${highlight(code,lang)}</code></pre></div>`;
+      if(!closed&&!streaming){}continue}
+    if(/^\s*$/.test(ln)){flush();i++;continue}
+    if((m=ln.match(/^(#{1,4})\s+(.*)$/))){flush();html+=`<h${m[1].length}>${inline(m[2])}</h${m[1].length}>`;i++;continue}
+    if(/^\s*([-*_])(\s*\1){2,}\s*$/.test(ln)){flush();html+='<hr>';i++;continue}
+    if(/^>\s?/.test(ln)){flush();const b=[];while(i<lines.length&&/^>\s?/.test(lines[i])){b.push(lines[i].replace(/^>\s?/,''));i++}html+=`<blockquote>${renderMarkdown(b.join('\n'))}</blockquote>`;continue}
+    if(/^\s*\|.*\|\s*$/.test(ln)&&i+1<lines.length&&/^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(lines[i+1])){
+      flush();const cells=r=>r.trim().replace(/^\||\|$/g,'').split('|').map(c=>c.trim());
+      const head=cells(ln);i+=2;const rows=[];while(i<lines.length&&/^\s*\|.*\|\s*$/.test(lines[i])){rows.push(cells(lines[i]));i++}
+      html+=`<div class="tw"><table><thead><tr>${head.map(h=>`<th>${inline(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${inline(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;continue}
+    if((m=ln.match(/^(\s*)([-*+]|\d+[.)])\s+(.*)$/))){flush();const ordered=/\d/.test(m[2]);const items=[];
+      while(i<lines.length&&(m=lines[i].match(/^(\s*)([-*+]|\d+[.)])\s+(.*)$/))){let t=m[3];i++;
+        while(i<lines.length&&/^\s{2,}\S/.test(lines[i])&&!/^\s*([-*+]|\d+[.)])\s/.test(lines[i])){t+='\n'+lines[i].trim();i++}items.push(t)}
+      html+=`<${ordered?'ol':'ul'}>${items.map(t=>`<li>${inline(t).replace(/\n/g,'<br>')}</li>`).join('')}</${ordered?'ol':'ul'}>`;continue}
+    para.push(ln);i++}
+  flush();return html}
+
+/* ---------- 5. UI rendering ---------- */
+function setupStaticIcons(){
+  $('#collapseBtn').innerHTML=ic('panel');$('#menuBtn').innerHTML=ic('menu');
+  $('#newChat').innerHTML=ic('edit')+'<span>New chat</span>';$('#searchIcon').innerHTML=ic('search');
+  $('#openProviders').innerHTML=ic('plug')+'<span>AI providers</span>';$('#openSettings').innerHTML=ic('settings')+'<span>Settings</span>';$('#navSearch').innerHTML=ic('search')+'<span>Search chats</span>';$('#navImage').innerHTML=ic('image')+'<span>Images</span>';$('#topSettings').innerHTML='<span>Configuration</span>'+ic('settings');$('#exportBtn').innerHTML='<span>Export</span>'+ic('zexport');$('#crownIc').innerHTML=ic('zcrown');$('#spkIc').innerHTML=ic('zspark');$('#setBtn').innerHTML=ic('zsliders')+'<span>Settings</span>';$('#optBtn').innerHTML=ic('zgrid')+'<span>Options</span>';
+  $('#attachBtn').innerHTML=ic('clip')+'<span>Attach</span>';$('#micBtn').innerHTML=ic('mic');$('#imgBtn').innerHTML=ic('image');$('#toLatest').innerHTML=ic('arrowdown');
+  updateSendBtn();updateThemeBtn()}
+function applyTheme(){document.documentElement.setAttribute('data-theme',S.settings.theme==='light'?'light':'dark')}
+function updateThemeBtn(){$('#themeBtn').innerHTML=ic(S.settings.theme==='light'?'moon':'sun');$('#themeBtn').setAttribute('aria-label',S.settings.theme==='light'?'Switch to dark theme':'Switch to light theme')}
+function updateSendBtn(){const b=$('#send');const gen=!!S.gen;b.classList.toggle('stop',gen);b.innerHTML=ic(gen?'stop':'send');b.setAttribute('aria-label',gen?'Stop generating':'Send message')}
+
+function dayGroup(ts){
+  const d=new Date(ts),n=new Date();const sod=x=>new Date(x.getFullYear(),x.getMonth(),x.getDate()).getTime();
+  const diff=Math.round((sod(n)-sod(d))/864e5);
+  return diff<=0?'Today':diff===1?'Yesterday':diff<8?'Previous 7 days':diff<31?'Previous 30 days':'Older'}
+function renderSidebar(){
+  const q=$('#search').value.trim().toLowerCase();const list=$('#chatlist');
+  let chats=[...S.chats].sort((a,b)=>b.updated-a.updated);
+  if(q)chats=chats.filter(c=>c.title.toLowerCase().includes(q)||c.messages.some(m=>(m.content||'').toLowerCase().includes(q)));
+  if(!chats.length){list.innerHTML=`<div class="empty-list">${q?'No conversations match your search.':'No conversations yet. Start a new chat to begin.'}</div>`}
+  else{
+    const groups=[];const pinned=chats.filter(c=>c.pinned);if(pinned.length)groups.push(['Pinned',pinned]);
+    const map=new Map();for(const c of chats.filter(c=>!c.pinned)){const g=dayGroup(c.updated);if(!map.has(g))map.set(g,[]);map.get(g).push(c)}
+    for(const g of ['Today','Yesterday','Previous 7 days','Previous 30 days','Older'])if(map.has(g))groups.push([g,map.get(g)]);
+    list.innerHTML=groups.map(([g,items])=>`<div class="grp">${g}</div>`+items.map(c=>`
+      <div class="chat-item ${c.id===S.activeId?'active':''}" data-id="${c.id}">
+        <button class="t" data-act="open" title="${esc(c.title)}">${esc(c.title)}</button>${c.pinned?`<span class="pin-mark" title="Pinned">${ic('pin')}</span>`:''}
+        <span class="acts">
+          <button class="ib" data-act="pin" aria-label="${c.pinned?'Unpin':'Pin'} conversation" title="${c.pinned?'Unpin':'Pin'}">${ic('pin')}</button>
+          <button class="ib" data-act="rename" aria-label="Rename conversation" title="Rename">${ic('edit')}</button>
+          <button class="ib" data-act="delete" aria-label="Delete conversation" title="Delete">${ic('trash')}</button>
+        </span></div>`).join('')).join('')}
+  renderStatus()}
+function renderStatus(){
+  const id=currentProviderId();const el=document.createElement('div');renderRail(id);
+  if(!id){el.innerHTML=`<span class="dot warn"></span><span>No provider set up</span>`;return}
+  const c=pcfg(id);const st=!hasKey(id)?['warn','Key needed for '+PROVIDERS[id].name]:c.status==='ok'?['ok',PROVIDERS[id].name+' connected']:c.status==='error'?['bad',PROVIDERS[id].name+': last request failed']:['warn',PROVIDERS[id].name+' saved, not tested'];
+  el.innerHTML=`<span class="dot ${st[0]}"></span><span>${esc(st[1])}<br><span class="muted">${S.sessionRequests} request${S.sessionRequests===1?'':'s'} this session${S.lastError?' · '+esc(S.lastError.slice(0,50)):''}</span></span>`}
+
+function clearChat(){
+  const ch=activeChat();if(!ch||!ch.messages.length)return toast('This chat is already empty.');
+  if(S.gen)return toast('Stop the current response first.');
+  confirmDialog('Clear this chat?','All messages in this conversation will be removed. This cannot be undone.','Clear chat',()=>{ch.messages=[];ch.updated=Date.now();saveChats();renderAll()})}
+function renderRail(id){
+    const free=S.settings.freeOnly;
+  const nm=id?PROVIDERS[id].name.replace(' (OpenAI-compatible)',''):'None yet';
+  let st=['warn','Setup needed'];
+  if(id){const c=pcfg(id);st=!hasKey(id)?['warn','Key needed']:c.status==='ok'?['ok','Connected']:c.status==='error'?['bad','Last request failed']:['warn','Not tested']}
+  const pill=$('#provPill'),bad=$('#onlineBadge');
+  if(pill)pill.innerHTML='<span>'+(id?esc(nm)+' · Auto':'Choose a model')+'</span>';
+  if(bad)bad.innerHTML=`<span class="dot ${st[0]}"></span>${esc(st[1])}`;
+  const sup=[['gemini','Free tier available'],['openrouter','Free models'],['groq','Free tier available'],['cerebras','Free tier available'],['pollinations','Free images, no key']];
+  const th=S.settings.theme==='light'?'light':'dark';
+  return;
+  const el={};el.innerHTML=`
+  <section class="rc"><div class="rh"><h3>AI Provider</h3><button class="lnk" data-r="providers">Manage</button></div>
+    <div class="prov"><div class="pic">${ic('spark')}</div><div class="pt"><b>${esc(nm)}</b><small>Auto model · ${free?'free only':'all models'}</small></div><span class="badge"><span class="dot ${st[0]}"></span>${esc(st[1])}</span></div>
+    ${S.lastError?`<div class="rerr">${esc(S.lastError.slice(0,90))}</div>`:''}</section>
+  <section class="rc"><div class="rh"><h3>Quick Actions</h3></div>
+    <div class="qa"><button data-r="upload">${ic('upload')}<span>Upload File</span></button><button data-r="voice">${ic('mic')}<span>Voice Input</span></button><button data-r="clear">${ic('trash')}<span>Clear Chat</span></button><button data-r="new">${ic('plus')}<span>New Chat</span></button></div></section>
+  <section class="rc"><div class="rh"><h3>Usage</h3><span class="muted">${S.sessionRequests} this session</span></div>
+    <div class="urow"><span>Models</span><b>${free?'Free only':'All models'}</b></div>
+    <div class="urow"><span>Chats saved</span><b>${S.chats.length}</b></div>
+    <small class="muted">Limits are set by each provider and can change.</small></section>
+  <section class="rc unlock"><div class="uh">${ic('crown')}<h3>Bring your own key</h3></div>
+    <p>Connect your own API key. Keys stay in your browser, or on your server with the backend proxy.</p>
+    <button class="btn primary wide" data-r="providers"><span>Configure API Keys</span>${ic('ext')}</button></section>
+  <section class="rc"><div class="rh"><h3>Supported Providers</h3></div>
+    ${sup.map(([k,t])=>`<div class="sp-row"><span class="spi">${esc(PROVIDERS[k].name[0])}</span><div><b>${esc(PROVIDERS[k].name.replace(/ \(.*\)/,''))}</b><small><span class="dot ok"></span>${esc(t)}</small></div></div>`).join('')}
+    <button class="lnk" data-r="providers">View all providers →</button></section>
+  <section class="rc themec"><div class="rh"><h3>Theme</h3>
+    <div class="seg"><button class="${th==='light'?'on':''}" data-r="theme" data-v="light" aria-label="Light theme">${ic('sun')}</button><button class="${th==='dark'?'on':''}" data-r="theme" data-v="dark" aria-label="Dark theme">${ic('moon')}</button></div></div></section>`}
+function currentProviderId(){
+  const ch=activeChat();const want=ch?.provider||S.settings.defaultProvider;
+  if(want&&PROVIDERS[want]&&(S.settings.providers[want]||want===S.settings.defaultProvider))return want;
+  return TEXT_IDS().find(id=>isUsable(id))||S.settings.defaultProvider||null}
+function currentImageProviderId(){
+  const ok=id=>PROVIDERS[id]?.image&&hasKey(id);
+  return ['pollinations','gemini','openrouter'].find(ok)||null}
+function toggleImageMode(){
+  S.imageMode=!S.imageMode;
+  const b=$('#imgBtn');b.classList.toggle('on',S.imageMode);b.setAttribute('aria-pressed',S.imageMode);$('#modeChat').classList.toggle('on',!S.imageMode);$('#modeImg').classList.toggle('on',S.imageMode);
+  $('#aspSel').hidden=!S.imageMode;
+  $('#input').placeholder=S.imageMode?'Describe the image you want...':'Ask Anything...';
+  if(S.imageMode&&!currentImageProviderId())toast('No image provider is available.',3500);
+  renderComposerSelectors();$('#input').focus()}
+const picks=()=>(S.settings.picks=S.settings.picks||{text:{},image:{}});
+function renderComposerSelectors(){
+  const ps=$('#provSel'),ms=$('#modelSel');ps.hidden=S.imageMode;
+  const mode=S.imageMode?'image':'text';
+  const id=S.imageMode?currentImageProviderId():currentProviderId();
+  const configured=TEXT_IDS().filter(i=>S.settings.providers[i]&&hasKey(i)&&(!PROVIDERS[i].local||pcfg(i).status==='ok'));
+  if(!S.imageMode){
+    const cur=currentProviderId();
+    if(!configured.length){ps.innerHTML='<option value="">No provider</option>';ps.disabled=true}
+    else{ps.disabled=false;ps.innerHTML=configured.map(i=>`<option value="${i}" ${i===cur?'selected':''}>${esc(PROVIDERS[i].name.replace(' (OpenAI-compatible)',''))}</option>`).join('')}}
+  const list=id?((S.imageMode?S.imgModels[id]:S.models[id])||[]):[];
+  if(id&&!list.length&&!PROVIDERS[id].custom&&(S.imageMode?hasKey(id):hasKey(id))){
+    const k=mode+id;S.loadingSel=S.loadingSel||{};
+    if(!S.loadingSel[k]){S.loadingSel[k]=1;(S.imageMode?Adapters.listImageModels(id):Adapters.listModels(id)).then(()=>renderComposerSelectors()).catch(()=>{})}}
+  const cur=id&&picks()[mode][id];
+  ms.innerHTML='<option value="">Auto (best free)</option>'+list.map(m=>`<option value="${esc(m.id)}" ${m.id===cur?'selected':''}>${esc(m.label||m.id)}</option>`).join('');
+  if(cur&&!list.some(m=>m.id===cur))ms.value='';
+  ms.disabled=!id||PROVIDERS[id]?.custom}
+const stage=()=>$('#stage');
+function renderStage(keepScroll){
+  const ch=activeChat();
+  $('#title').textContent=ch?ch.title:'New chat';
+  if(!ch||!ch.messages.length){stage().innerHTML='';$('#main').classList.add('empty');renderHero();return}
+  $('#main').classList.remove('empty');$('#heroSug').innerHTML='';
+  stage().innerHTML=`<div class="wrap">${ch.messages.map((m,i)=>msgHtml(m,i,ch)).join('')}</div>`;
+  if(!keepScroll)scrollToBottom(true);updateToLatest();hydrateImages()}
+function hydrateImages(){
+  $$('img[data-img]',stage()).forEach(async el=>{
+    if(el.getAttribute('src'))return;const id=el.dataset.img;
+    let v=S.imgCache[id]||el.dataset.url;
+    if(!v){v=await IDB.get(id);if(v)S.imgCache[id]=v}
+    if(v)el.src=v;else el.alt='This image is no longer stored on this device'})}
+async function downloadImage(id){
+  let v=S.imgCache[id];if(!v){v=await IDB.get(id);if(v)S.imgCache[id]=v}
+  if(!v){const m=activeChat()?.messages.flatMap(x=>x.images||[]).find(i=>i.id===id);v=m?.url}
+  if(!v)return toast('Image not available');
+  const a=document.createElement('a');a.href=v;
+  const ext=(v.match(/^data:image\/(\w+)/)||[])[1]||'png';a.download=`rax-ai-${id}.${ext==='jpeg'?'jpg':ext}`;
+  if(!v.startsWith('data:'))a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();a.remove()}
+function renderHero(){
+  const chips=[['image','Create Image','','image','image'],['zbulb','Brainstorm','Give me 10 ideas for '],['zplan','Make a plan','Make a clear step-by-step plan for ']];
+  const cards=[['image','Image Generator','Create Image','Create high-quality images instantly from text.','','image'],['zslides','AI Presentation','Make Slides','Turn ideas into engaging, professional presentations.','Create a clear slide-by-slide presentation outline about '],['code','Dev Assistant','Generate Code','Generate clean, production-ready code in seconds.','Help me write code for: ']];
+  const need=!TEXT_IDS().some(isUsable);
+  $('#heroChips').innerHTML=chips.map(c=>`<button class="hchip" ${c[3]?'data-mode="image"':''} data-fill="${esc(c[2]||'')}"><span>${esc(c[1])}</span>${ic(c[0])}</button>`).join('');
+  $('#heroSug').innerHTML=(need?`<div class="notice"><span>Connect a free AI provider with your own API key to start chatting. It takes about two minutes.</span><button class="btn primary sm" data-act="wizard">Set up a provider</button></div>`:'')+
+    cards.map(c=>`<button class="gcard" ${c[5]?'data-mode="image"':''} data-fill="${esc(c[4]||'')}"><span class="gt"><span class="gi">${ic(c[0])}</span><span class="gb">${esc(c[2])}</span></span><b>${esc(c[1])}</b><small>${esc(c[3])}</small></button>`).join('')}
+function welcomeHtml(){
+  const cards=[['pen','Write & Create','Essays, emails, stories, content…','Write a short, engaging story about a robot who learns to paint','#a78bfa'],['code','Code & Debug','Generate, explain, fix code…','Help me debug my code. I will paste it next.','#60a5fa'],['book','Learn & Understand','Simplify complex topics…','Explain a difficult topic simply, with examples','#34d399'],['translate','Translate','English ↔ Bangla and more…','Translate this to Bangla: Good morning, how are you?','#fb923c'],['doc','Summarize','Get key points from long text…','Summarize this text into key points. I will paste it next.','#818cf8'],['bulb','Brainstorm','Ideas for business, content…','Give me 10 business ideas I can start with little money','#fbbf24']];
+  const chips=['Explain a difficult topic','Write a professional email','Help me build a website','Write a Bangla video script','Debug my code','Give me business ideas'];
+  const need=!TEXT_IDS().some(isUsable);
+  return `<div class="welcome"><div class="logo big">${LOGO}</div>
+    <h2>Hello, I'm <span class="grad">RAX AI</span></h2>
+    <p class="lead">Your personal AI assistant. Ask anything, get creative, solve problems and explore new possibilities.</p>
+    <div class="cards">${cards.map(c=>`<button class="card" data-prompt="${esc(c[3])}"><span class="ci" style="--c:${c[4]}">${ic(c[0])}</span><span class="ct"><b>${esc(c[1])}</b><small>${esc(c[2])}</small></span></button>`).join('')}</div>
+    ${need?`<div class="notice"><span>Connect a free AI provider with your own API key to start chatting. It takes about two minutes.</span><button class="btn primary sm" data-act="wizard">Set up a provider</button></div>`:''}
+    <div class="sugg"><div class="sh">${ic('spark')}<b>Suggested Prompts</b></div><div class="chips2">${chips.map(c=>`<button class="chip2" data-prompt="${esc(c)}">${esc(c)}</button>`).join('')}</div></div></div>`}
+function msgHtml(m,i,ch){
+  const isLast=i===ch.messages.length-1;
+  if(m.role==='user'){
+    if(S.editingId===m.id)return `<div class="msg user" data-mid="${m.id}"><div class="av">You</div><div class="body"><div class="edit-box"><textarea id="editArea" aria-label="Edit message">${esc(m.content)}</textarea><div class="row"><button class="btn sm" data-act="edit-cancel">Cancel</button><button class="btn primary sm" data-act="edit-save">Save and resend</button></div></div></div></div>`;
+    const atts=(m.attachments||[]).map(a=>`<span class="att">${a.dataUrl?`<img src="${a.dataUrl}" alt="">`:ic('clip')}<span>${esc(a.name)}</span></span>`).join('');
+    return `<div class="msg user" data-mid="${m.id}"><div class="av">You</div><div class="body">${atts?`<div class="atts">${atts}</div>`:''}<div class="bubble">${m.mode==='image'?'<span class="tag">Image</span>':''}${esc(m.content)}</div>
+      <div class="acts-row"><button class="ib" data-act="copy-msg" aria-label="Copy message" title="Copy">${ic('copy')}</button><button class="ib" data-act="edit" aria-label="Edit and resend" title="Edit and resend" ${S.gen?'disabled':''}>${ic('edit')}</button></div></div></div>`}
+  const streaming=S.gen&&S.gen.msgId===m.id;
+  return `<div class="msg assistant" data-mid="${m.id}"><div class="av">${LOGO}</div><div class="body"><div class="who">RAX AI${m.model?` <span class="muted">· ${m.task?esc(m.task)+' · ':''}${esc(m.model)}</span>`:''}</div>
+    ${(m.images||[]).length?`<div class="imgs">${m.images.map(im=>`<figure class="gimg"><img data-img="${im.id}" ${im.url?`data-url="${esc(im.url)}"`:''} alt="Generated image"><figcaption><button class="btn sm" data-act="dl-img" data-img="${im.id}">${ic('download')}<span>Download</span></button></figcaption></figure>`).join('')}</div>`:''}
+    <div class="md">${streaming&&m.kind==='image'?'<span class="muted">Generating image…</span>':renderMarkdown(m.content,streaming)}${streaming?'<span class="caret"></span>':''}</div>
+    ${m.error?`<div class="err"><p>${esc(m.error)}</p>${isLast?`<button class="btn sm" data-act="retry">${ic('refresh')}<span>Retry</span></button>`:''}</div>`:''}
+    ${streaming?'':`<div class="acts-row">
+      <button class="ib" data-act="copy-msg" aria-label="Copy response" title="Copy response">${ic('copy')}</button>
+      ${isLast&&!m.error?`<button class="ib" data-act="regen" aria-label="Regenerate response" title="Regenerate">${ic('refresh')}</button>`:''}
+      <button class="ib ${m.feedback==='up'?'on':''}" data-act="up" aria-label="Good response" aria-pressed="${m.feedback==='up'}" title="Good response">${ic('up')}</button>
+      <button class="ib ${m.feedback==='down'?'on':''}" data-act="down" aria-label="Bad response" aria-pressed="${m.feedback==='down'}" title="Bad response">${ic('down')}</button></div>`}</div></div>`}
+function updateStreamingBubble(m){
+  const el=$(`.msg[data-mid="${m.id}"] .md`);if(!el)return;
+  el.innerHTML=renderMarkdown(m.content,true)+'<span class="caret"></span>';
+  if(nearBottom())scrollToBottom(true)}
+const sc=()=>$('#scroll');
+const nearBottom=()=>sc().scrollHeight-sc().scrollTop-sc().clientHeight<140;
+function scrollToBottom(instant){const el=sc();el.style.scrollBehavior=instant?'auto':'';el.scrollTop=el.scrollHeight;el.style.scrollBehavior=''}
+function updateToLatest(){$('#toLatest').hidden=nearBottom()||!(activeChat()?.messages.length)}
+
+/* attachments */
+function renderAtts(){
+  $('#atts').innerHTML=S.attachments.map((a,i)=>`<span class="att">${a.dataUrl?`<img src="${a.dataUrl}" alt="">`:ic('clip')}<span>${esc(a.name)}</span><button data-rm="${i}" aria-label="Remove ${esc(a.name)}">${ic('x')}</button></span>`).join('')}
+async function addFiles(files){
+  const id=currentProviderId();
+  for(const f of files){
+    if(f.size>8*1024*1024){toast(`${f.name} is larger than 8 MB.`);continue}
+    if(f.type.startsWith('image/')){
+      if(id&&!PROVIDERS[id].caps.vision){toast(`${PROVIDERS[id].name} can't read images. Switch to a vision-capable provider.`);continue}
+      const dataUrl=await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(f)});
+      S.attachments.push({name:f.name,type:f.type,dataUrl})}
+    else if(f.type.startsWith('text/')||/\.(txt|md|csv|json|js|ts|jsx|tsx|py|html|css|xml|yml|yaml|java|c|cpp|cs|go|rs|php|rb|sh|sql|log|srt|ini|toml)$/i.test(f.name)){
+      if(f.size>300*1024){toast(`${f.name} is too large to send as text (limit 300 KB).`);continue}
+      S.attachments.push({name:f.name,type:f.type||'text/plain',text:await f.text()})}
+    else toast(`${f.name}: this file type isn't supported yet. Use text, code or image files.`)}
+  renderAtts()}
+
+/* ---------- 6. Chat engine ---------- */
+function newChat(){
+  if(S.gen)return toast('Stop the current response first.');
+  S.activeId=null;S.editingId=null;renderAll();$('#input').focus();closeDrawer()}
+function openChat(id){if(S.gen)return toast('Stop the current response first.');S.activeId=id;S.editingId=null;renderAll();closeDrawer()}
+function ensureChat(){
+  let ch=activeChat();
+  if(!ch){ch={id:uid(),title:'New chat',created:Date.now(),updated:Date.now(),pinned:false,messages:[],provider:currentProviderId()};S.chats.unshift(ch);S.activeId=ch.id}
+  return ch}
+async function sendImage(text){
+  if(!text)return toast('Describe the image you want.');
+  const id=currentImageProviderId();
+  if(!id){toast('No image provider is available.');return}
+  const manI=picks().image[id];
+  const model=manI&&(S.imgModels[id]||[]).some(m=>m.id===manI)?manI:await bestImageModel(id);
+  const ch=ensureChat();
+  ch.messages.push({id:uid(),role:'user',content:text,mode:'image',imgProvider:id,imgModel:model,aspect:$('#aspSel').value,ts:Date.now()});
+  if(ch.title==='New chat')ch.title='Image: '+text.replace(/\s+/g,' ').slice(0,42);
+  $('#input').value='';autosize();ch.updated=Date.now();saveChats();
+  await generate(ch)}
+async function generateImage(ch,u){
+  const am={id:uid(),role:'assistant',kind:'image',content:'',model:'',task:'image',ts:Date.now()};
+  ch.messages.push(am);
+  const ac=new AbortController();S.gen={abort:ac,chatId:ch.id,msgId:am.id};S.sessionRequests++;
+  updateSendBtn();renderStage();renderSidebar();scrollToBottom(true);
+  let lastId=u.imgProvider;
+  try{
+    // Try the best available image provider first, then the other free ones. Paid OpenAI is never used as an automatic fallback.
+    const order=['pollinations','gemini','openrouter'].filter(p=>hasKey(p)&&p!=='gemini');
+    const first=(u.imgProvider&&PROVIDERS[u.imgProvider]&&hasKey(u.imgProvider))?u.imgProvider:order[0];
+    const cands=[first,...order.filter(p=>p!==first)].filter(Boolean);
+    if(!cands.length)throw new ProviderError('No image provider is available.',0,'empty');
+    let result=null,used=null,lastErr=null;
+    for(const p of cands){
+      lastId=p;
+      const model=(p===u.imgProvider&&u.imgModel)||await bestImageModel(p);
+      if(!model){lastErr=new ProviderError('No image model is available for '+PROVIDERS[p].name+'.',0,'empty');continue}
+      try{result=await Adapters.generateImage(p,u.content,{model,aspect:u.aspect},ac.signal);used={p,model};lastErr=null;break}
+      catch(e){lastErr=normalizeError(p,e);if(lastErr.kind==='abort')break}}
+    if(lastErr)throw lastErr;
+    am.model=PROVIDERS[used.p].name.split(' ')[0]+' · '+used.model;lastId=used.p;
+    am.images=[];
+    for(const src of result.images){const imid=uid();if(src.startsWith('data:')){S.imgCache[imid]=src;IDB.put(imid,src);am.images.push({id:imid})}else am.images.push({id:imid,url:src})}
+    am.content=result.text||'';pcfg(lastId).status='ok';pcfg(lastId).lastError='';S.lastError=null;
+  }catch(e){
+    const err=normalizeError(lastId,e);
+    if(err.kind==='abort')ch.messages=ch.messages.filter(m=>m.id!==am.id);
+    else{am.error=err.message;S.lastError=err.message;if(lastId&&PROVIDERS[lastId]){pcfg(lastId).lastError=err.message;if(err.kind==='auth')pcfg(lastId).status='error'}}}
+  finally{S.gen=null;ch.updated=Date.now();saveChats();saveSettings();updateSendBtn();if(S.activeId===ch.id){renderStage(true);setTimeout(()=>scrollToBottom(),80)}renderSidebar()}}
+async function sendUser(text){
+  text=text.trim();
+  if((!text&&!S.attachments.length)||S.gen)return;
+  if(S.imageMode||(!S.attachments.length&&wantsImage(text)&&currentImageProviderId()))return sendImage(text);
+  const id=currentProviderId();
+  if(!id||!isUsable(id)){toast('Set up a provider first.');openWizard();return}
+  if(!hasKey(id)){toast('Add an API key for '+PROVIDERS[id].name+'.');openSettings('providers',id);return}
+  const ch=ensureChat();ch.provider=id;
+  ch.messages.push({id:uid(),role:'user',content:text,attachments:S.attachments.map(a=>({...a})),ts:Date.now()});
+  if(ch.title==='New chat'){ch.title=(text||S.attachments[0]?.name||'New chat').replace(/\s+/g,' ').slice(0,48)}
+  S.attachments=[];renderAtts();$('#input').value='';autosize();
+  ch.updated=Date.now();saveChats();
+  await generate(ch)}
+async function generate(ch){
+  const lastUser=[...ch.messages].reverse().find(m=>m.role==='user');
+  if(lastUser?.mode==='image')return generateImage(ch,lastUser);
+  const id=ch.provider||currentProviderId();
+  const task=detectTask(lastUser?.content,lastUser?.attachments);
+  const am={id:uid(),role:'assistant',content:'',model:'',task:task==='code'?'coding':'chat',ts:Date.now()};
+  ch.messages.push(am);
+  const ac=new AbortController();S.gen={abort:ac,chatId:ch.id,msgId:am.id};S.sessionRequests++;
+  updateSendBtn();renderStage();renderSidebar();scrollToBottom(true);
+  const history=ch.messages.filter(m=>m.id!==am.id).map(m=>m.images?.length?{...m,content:m.content||'[Generated an image]'}:m);
+  let raf=0;const tick=()=>{if(!raf)raf=requestAnimationFrame(()=>{raf=0;if(S.activeId===ch.id)updateStreamingBubble(am)})};
+  try{
+    await ensureModels(id);
+    const man=picks().text[id];
+    const cands=man&&(S.models[id]||[]).some(m=>m.id===man)?[man]:rankModels(id,task);
+    if(!cands.length)throw new ProviderError('No model is available for this provider. Check your key and use Test connection in Settings.',0,'empty');
+    let lastErr=null;
+    for(let i=0;i<cands.length;i++){
+      am.model=cands[i];am.content='';
+      try{await Adapters.streamMessage(id,history,d=>{am.content+=d;tick()},ac.signal,S.settings.stream,cands[i]);lastErr=null;break}
+      catch(e){const er=normalizeError(id,e);lastErr=er;if(er.kind==='abort'||am.content||!(er.kind==='quota'||er.status===404)||i===cands.length-1)break}}
+    if(lastErr)throw lastErr;
+    pcfg(id).status='ok';pcfg(id).lastError='';pcfg(id).lastOk=Date.now();S.lastError=null;
+  }catch(e){
+    const err=normalizeError(id,e);
+    if(err.kind==='abort'){if(!am.content)ch.messages=ch.messages.filter(m=>m.id!==am.id)}
+    else{am.error=err.message;S.lastError=err.message;pcfg(id).lastError=err.message;if(err.kind==='auth'||err.kind==='network')pcfg(id).status='error'}}
+  finally{S.gen=null;ch.updated=Date.now();saveChats();saveSettings();updateSendBtn();if(S.activeId===ch.id)renderStage(true);renderSidebar();renderComposerSelectors()}}
+function stopGen(){if(S.gen){S.gen.abort.abort()}}
+function lastIndexOfUser(ch){for(let i=ch.messages.length-1;i>=0;i--)if(ch.messages[i].role==='user')return i;return -1}
+async function regenerate(){
+  const ch=activeChat();if(!ch||S.gen)return;
+  while(ch.messages.length&&ch.messages[ch.messages.length-1].role==='assistant')ch.messages.pop();
+  if(lastIndexOfUser(ch)<0)return;saveChats();await generate(ch)}
+async function saveEdit(msgId){
+  const ch=activeChat();if(!ch||S.gen)return;
+  const idx=ch.messages.findIndex(m=>m.id===msgId);const val=$('#editArea').value.trim();if(idx<0||!val)return;
+  ch.messages[idx].content=val;ch.messages=ch.messages.slice(0,idx+1);S.editingId=null;
+  if(idx===0)ch.title=val.replace(/\s+/g,' ').slice(0,48);
+  saveChats();await generate(ch)}
+
+/* voice */
+let rec=null;
+function closePlusMenu(){const m=$('#plusMenu');if(m&&!m.hidden){m.hidden=true;$('#attachBtn').setAttribute('aria-expanded','false')}}
+function exportChat(){
+  const ch=activeChat();if(!ch||!ch.messages.length)return toast('Nothing to export yet.');
+  const md='# '+ch.title+'\n\n'+ch.messages.map(m=>'**'+(m.role==='user'?'You':'RAX AI')+'**\n\n'+(m.content||'')+'\n').join('\n---\n\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([md],{type:'text/markdown'}));
+  a.download=(ch.title||'chat').replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'-').slice(0,40)+'.md';
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('Chat exported')}
+function togglePlusMenu(){const m=$('#plusMenu');$('#optPanel').hidden=true;if(!m.hidden){closePlusMenu();return}
+  const rows=[['file','clip','Add photos & files','Upload from your device'],['image','image','Create image','Generate a picture with a free model'],['code','code','Write code','Start a coding prompt'],['voice','mic','Voice input','Speak instead of typing (Bangla works)'],['detail','spark','Detailed answers','Think step by step'+(S.detailed?' · On':''),S.detailed],['providers','plug','AI providers','Add or manage API keys'],['settings','settings','Settings','Theme, free-only filter, backend']];
+  m.innerHTML=rows.map(r=>`<button role="menuitem" data-pm="${r[0]}">${ic(r[1])}<span class="pt"><b>${esc(r[2])}</b><small>${esc(r[3])}</small></span>${r[4]?ic('check','ok'):''}</button>`).join('');
+  m.hidden=false;$('#attachBtn').setAttribute('aria-expanded','true')}
+function toggleVoice(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR)return toast('Voice input is not supported in this browser. Try Chrome or Edge.');
+  if(rec){rec.stop();return}
+  rec=new SR();rec.lang=S.settings.voiceLang||'en-US';rec.interimResults=true;rec.continuous=true;
+  const base=$('#input').value;let finalT='';
+  rec.onresult=e=>{let interim='';for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i];if(r.isFinal)finalT+=r[0].transcript;else interim+=r[0].transcript}
+    $('#input').value=(base?base+' ':'')+finalT+interim;autosize()};
+  rec.onerror=e=>{toast(e.error==='not-allowed'?'Microphone permission was denied.':'Voice input error: '+e.error)};
+  rec.onend=()=>{rec=null;$('#micBtn').classList.remove('rec')};
+  try{rec.start();$('#micBtn').classList.add('rec');toast('Listening in '+rec.lang)}catch(e){rec=null}}
+
+function autosize(){const t=$('#input');t.style.height='auto';t.style.height=Math.min(t.scrollHeight,220)+'px'}
+
+/* ---------- 7. Modals, settings, wizard ---------- */
+let modalEl=null,lastFocus=null;
+function openModal(html,{small=false,onMount,onClose}={}){
+  closeModal();lastFocus=document.activeElement;
+  const ov=document.createElement('div');ov.className='ov';
+  ov.innerHTML=`<div class="modal ${small?'sm':''}" role="dialog" aria-modal="true">${html}</div>`;
+  document.body.appendChild(ov);modalEl=ov;ov._onClose=onClose;
+  ov.addEventListener('mousedown',e=>{if(e.target===ov)closeModal()});
+  ov.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();
+    if(e.key==='Tab'){const f=$$('button,input,select,textarea,a[href]',ov).filter(x=>!x.disabled&&x.offsetParent!==null);if(!f.length)return;const a=f[0],z=f[f.length-1];
+      if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}});
+  onMount&&onMount(ov);const first=$('input:not([type=checkbox]),button.primary,button',ov);first&&first.focus();return ov}
+function closeModal(){if(!modalEl)return;const c=modalEl._onClose;modalEl.remove();modalEl=null;c&&c();lastFocus&&lastFocus.focus&&lastFocus.focus()}
+function confirmDialog(title,text,okLabel,onOk){
+  openModal(`<div class="mh"><h3>${esc(title)}</h3></div><div class="mb"><div>${esc(text)}</div></div><div class="mf"><button class="btn" data-x="cancel">Cancel</button><button class="btn danger" data-x="ok">${esc(okLabel)}</button></div>`,{small:true,onMount:o=>{
+    o.addEventListener('click',e=>{const b=e.target.closest('[data-x]');if(!b)return;if(b.dataset.x==='ok')onOk();closeModal()})}})}
+function promptDialog(title,value,onOk){
+  openModal(`<div class="mh"><h3>${esc(title)}</h3></div><div class="mb"><div class="field"><label for="pdIn" class="sr">${esc(title)}</label><input type="text" id="pdIn" value="${esc(value)}" maxlength="120"></div></div><div class="mf"><button class="btn" data-x="cancel">Cancel</button><button class="btn primary" data-x="ok">Save</button></div>`,{small:true,onMount:o=>{
+    const inp=$('#pdIn',o);inp.select();const go=()=>{const v=inp.value.trim();if(v){onOk(v);closeModal()}};
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter')go()});
+    o.addEventListener('click',e=>{const b=e.target.closest('[data-x]');if(!b)return;if(b.dataset.x==='ok')go();else closeModal()})}})}
+
+const maskKey=k=>k?'•••• •••• '+k.slice(-4):'';
+function statusBadge(id){
+  const c=pcfg(id);
+  if(!hasKey(id))return `<span class="badge">Not configured</span>`;
+  if(c.status==='ok')return `<span class="badge ok"><span class="dot ok"></span>Connected</span>`;
+  if(c.status==='error')return `<span class="badge bad"><span class="dot bad"></span>Error</span>`;
+  return `<span class="badge warn"><span class="dot warn"></span>Saved, not tested</span>`}
+
+function openSettings(tab='providers',focusProvider){
+  const render=()=>{
+    const body=tab==='providers'?providersTab():tab==='general'?generalTab():compareTab();
+    const o=modalEl;if(!o)return;
+    $('.modal',o).innerHTML=`<div class="mh"><h3>Settings</h3><button class="ib" data-x="close" aria-label="Close settings">${ic('x')}</button></div>
+      <div class="tabs" role="tablist">${[['providers','API Providers'],['general','General'],['compare','Compare providers']].map(([k,l])=>`<button class="tab" role="tab" data-tab="${k}" aria-selected="${k===tab}">${l}</button>`).join('')}</div>
+      <div class="mb">${body}</div>`;
+    if(focusProvider&&tab==='providers'){const el=$(`[data-prov="${focusProvider}"]`,o);if(el){el.scrollIntoView({block:'center'});openProviderForm(focusProvider,true)}focusProvider=null}};
+  openModal('',{onClose:()=>{renderAll()},onMount:o=>{
+    o.addEventListener('click',async e=>{
+      const t=e.target.closest('[data-tab]');if(t){tab=t.dataset.tab;render();return}
+      if(e.target.closest('[data-x="close"]'))return closeModal();
+      const a=e.target.closest('[data-pa]');if(a){await providerAction(a.dataset.pa,a.dataset.id,o,render)}
+      if(e.target.closest('[data-wizard]')){closeModal();openWizard()}
+      if(e.target.closest('[data-clearchats]'))confirmDialog('Delete all conversations?','This removes every saved conversation from this device. It cannot be undone.','Delete all',()=>{S.chats.forEach(purgeImages);S.chats=[];S.activeId=null;saveChats();renderAll();toast('All conversations deleted')})});
+    o.addEventListener('change',e=>{
+      const t=e.target;
+      if(t.id==='gTheme'){S.settings.theme=t.value;saveSettings();applyTheme();updateThemeBtn()}
+      if(t.id==='gFree'){S.settings.freeOnly=t.checked;saveSettings();S.models={};S.imgModels={};S.imgFailed={};TEXT_IDS().forEach(id=>{if(S.settings.providers[id]&&hasKey(id))Adapters.listModels(id).then(renderComposerSelectors).catch(()=>{})});renderComposerSelectors();toast(t.checked?'Showing free models only':'Showing all models')}
+      if(t.id==='gStream'){S.settings.stream=t.checked;saveSettings()}
+      if(t.id==='gVoice'){S.settings.voiceLang=t.value;saveSettings()}
+      if(t.id==='gRemember'){S.settings.rememberKeys=t.checked;saveSettings();saveKeys();toast(t.checked?'Keys will be remembered on this device':'Saved keys removed from this device')}
+      if(t.id==='gBackend'){S.settings.backendMode=t.checked;saveSettings();render()}
+      if(t.id==='gBackendUrl'){S.settings.backendUrl=t.value.trim();saveSettings()}});
+    render()}});
+}
+function providersTab(){
+  return `<div class="muted">Connect your own API keys. Free quotas, models and rate limits are set by each provider and can change, so check their pricing pages. Keys are never shown in full after saving.</div>
+  ${S.settings.backendMode?`<div class="warnbox">Backend mode is on. Requests go through your RAX server, which holds the keys. Key fields below are not needed.</div>`:''}
+  <button class="btn sm" data-wizard style="align-self:flex-start">Run the setup wizard</button>`+
+  TEXT_IDS().map(id=>{const p=PROVIDERS[id],c=pcfg(id);const def=S.settings.defaultProvider===id;
+    return `<div class="pcard" data-prov="${id}"><div class="top"><div class="info"><h4>${esc(p.name)} ${statusBadge(id)} ${def?'<span class="badge def">Default</span>':''}</h4><p>${esc(p.desc)}</p>
+      <p class="muted">Model: automatic${p.custom&&c.model?' ('+esc(c.model)+')':''}${c.lastError?` · <span class="perr">${esc(c.lastError)}</span>`:''}</p></div>
+      <div class="pbtns"><button class="btn sm" data-pa="configure" data-id="${id}">Configure</button><button class="btn sm" data-pa="test" data-id="${id}" ${hasKey(id)?'':'disabled'}>Test connection</button><button class="btn sm" data-pa="remove" data-id="${id}" ${(S.keys[id]||c.model||c.customBase)?'':'disabled'}>Remove</button></div></div>
+      <div class="pform-slot" data-slot="${id}"></div></div>`}).join('')}
+function openProviderForm(id,reveal){
+  const slot=$(`[data-slot="${id}"]`,modalEl);if(!slot)return;
+  if(slot.innerHTML&&!reveal){slot.innerHTML='';return}
+  const p=PROVIDERS[id],c=pcfg(id);
+  slot.innerHTML=`<div class="pform">
+    ${p.custom?`<div class="field"><label for="f-base-${id}">API base URL</label><input type="url" id="f-base-${id}" value="${esc(c.customBase)}" placeholder="https://your-endpoint.example/v1" autocomplete="off"><small>Must be an OpenAI-compatible endpoint ending in /v1. Only enter endpoints you trust.</small></div>`:''}
+    ${S.settings.backendMode?'':`<div class="field"><label for="f-key-${id}">API key</label><div class="keyrow"><input type="password" id="f-key-${id}" placeholder="${S.keys[id]?esc(maskKey(S.keys[id]))+' (saved, type to replace)':'Paste your API key'}" autocomplete="off" spellcheck="false"><button class="ib" data-pa="reveal" data-id="${id}" aria-label="Show or hide key">${ic('eye')}</button></div>
+      <small>${p.keyUrl?`Get a key: <a href="${p.keyUrl}" target="_blank" rel="noopener noreferrer">${new URL(p.keyUrl).host}</a> · `:''}<a href="${p.docs}" target="_blank" rel="noopener noreferrer">Official docs</a></small></div>`}
+    ${p.custom?`<div class="field"><label for="f-mname-${id}">Model name</label><input type="text" id="f-mname-${id}" class="txt" value="${esc(c.model||'')}" placeholder="Model id your endpoint serves"><small>Custom endpoints need a model name. Other providers pick the best model automatically.</small></div>`:`<small class="muted">RAX AI picks the best model automatically for chat, coding and images.</small>`}
+    <div class="pbtns"><button class="btn primary sm" data-pa="save" data-id="${id}">Save</button><button class="btn sm" data-pa="savetest" data-id="${id}">Save and test</button><button class="btn sm" data-pa="default" data-id="${id}">Set as default</button></div>
+    <div id="f-msg-${id}" role="status"></div></div>`}
+function readForm(id,o){
+  const c=pcfg(id);const key=$(`#f-key-${id}`,o)?.value.trim();const typed=$(`#f-mname-${id}`,o)?.value.trim();
+  if(PROVIDERS[id].custom){const b=$(`#f-base-${id}`,o)?.value.trim();if(b!==undefined){const chk=validateEndpoint(b);if(b&&!chk.ok)return {error:chk.msg};c.customBase=b}}
+  if(key){S.keys[id]=key}
+  if(PROVIDERS[id].custom&&typed)c.model=typed;
+  saveKeys();saveSettings();return {ok:true}}
+function validateEndpoint(u){
+  if(!u)return {ok:false,msg:'Enter an API base URL.'};
+  let url;try{url=new URL(u)}catch(e){return {ok:false,msg:'That is not a valid URL.'}}
+  const local=['localhost','127.0.0.1','[::1]'].includes(url.hostname);
+  if(url.protocol!=='https:'&&!(url.protocol==='http:'&&local))return {ok:false,msg:'Use https://. Plain http:// is only allowed for localhost.'};
+  if(url.username||url.password)return {ok:false,msg:'Do not put credentials inside the URL.'};
+  return {ok:true}}
+async function testProvider(id,msgEl){
+  const c=pcfg(id);if(msgEl)msgEl.innerHTML='<span class="muted">Testing…</span>';
+  const r=await Adapters.validateConfiguration(id);
+  if(r.ok){c.status='ok';c.lastError='';c.lastOk=Date.now();if(PROVIDERS[id].custom&&!c.model&&r.models[0])c.model=r.models[0].id;if(msgEl)msgEl.innerHTML=`<span class="pok">Connected. ${r.models.length} model${r.models.length===1?'':'s'} available.</span>`}
+  else{c.status='error';c.lastError=r.error.message;if(msgEl)msgEl.innerHTML=`<span class="perr">${esc(r.error.message)}</span>`}
+  saveSettings();return r}
+async function providerAction(act,id,o,rerender){
+  const msg=()=>$(`#f-msg-${id}`,o);
+  if(act==='configure'){openProviderForm(id);return}
+  if(act==='reveal'){const i=$(`#f-key-${id}`,o);i.type=i.type==='password'?'text':'password';return}
+  if(act==='remove'){confirmDialog('Remove '+PROVIDERS[id].name+'?','The saved key, model and endpoint for this provider will be deleted from this device.','Remove',()=>{delete S.keys[id];delete S.settings.providers[id];delete S.models[id];if(S.settings.defaultProvider===id)S.settings.defaultProvider=null;saveKeys();saveSettings();toast('Provider removed');openSettings('providers')});return}
+  if(act==='models'){const f=readForm(id,o);if(f.error){msg().innerHTML=`<span class="perr">${esc(f.error)}</span>`;return}
+    msg().innerHTML='<span class="muted">Loading models…</span>';
+    try{const l=await Adapters.listModels(id);pcfg(id).status='ok';pcfg(id).lastError='';const keep=$(`#f-key-${id}`,o)?.value;openProviderForm(id,true);if(keep!==undefined&&$(`#f-key-${id}`,o))$(`#f-key-${id}`,o).value=keep;
+      $(`#f-msg-${id}`,o).innerHTML=`<span class="pok">${l.length} models loaded. Pick one and save.</span>`;saveSettings()}
+    catch(e){const er=normalizeError(id,e);pcfg(id).status='error';pcfg(id).lastError=er.message;msg().innerHTML=`<span class="perr">${esc(er.message)}</span>`;saveSettings()}return}
+  if(act==='save'||act==='savetest'){
+    const f=readForm(id,o);if(f.error){msg().innerHTML=`<span class="perr">${esc(f.error)}</span>`;return}
+    if(!S.settings.defaultProvider)S.settings.defaultProvider=id;
+    if(act==='savetest'){await testProvider(id,msg())}else{pcfg(id).status='untested';msg().innerHTML='<span class="pok">Saved. Run a test to confirm it works.</span>';saveSettings()}
+    if(!(act==='savetest'&&pcfg(id).status==='error')){setTimeout(()=>{if(modalEl)openSettings('providers')},act==='savetest'?900:700)}return}
+  if(act==='default'){S.settings.defaultProvider=id;saveSettings();toast(PROVIDERS[id].name+' is now the default');openSettings('providers');return}
+  if(act==='test'){const card=$(`[data-prov="${id}"]`,o);let slot=$(`[data-slot="${id}"]`,o);if(!slot.innerHTML)openProviderForm(id,true);await testProvider(id,$(`#f-msg-${id}`,o));setTimeout(()=>{if(modalEl&&$(`[data-prov="${id}"]`))openSettings('providers')},1400)}}
+function generalTab(){
+  const s=S.settings;
+  return `<div class="field"><label for="gTheme">Theme</label><select id="gTheme"><option value="dark" ${s.theme==='dark'?'selected':''}>Dark</option><option value="light" ${s.theme==='light'?'selected':''}>Light</option></select></div>
+  <p class="muted" style="margin:0">Only free providers are included: free tiers, free models and local servers. Free tiers have rate limits set by each provider, which can change. Paid Gemini image models are never used.</p>
+  <label class="switch"><input type="checkbox" id="gStream" ${s.stream?'checked':''}><span>Stream responses as they are written<br><small class="muted">Turn off if your provider or network breaks streaming.</small></span></label>
+  <div class="field"><label for="gVoice">Voice input language</label><select id="gVoice">${[['en-US','English (US)'],['en-GB','English (UK)'],['bn-BD','Bangla (Bangladesh)'],['bn-IN','Bangla (India)'],['hi-IN','Hindi'],['ar-SA','Arabic'],['es-ES','Spanish'],['fr-FR','French']].map(([v,l])=>`<option value="${v}" ${s.voiceLang===v?'selected':''}>${l}</option>`).join('')}</select></div>
+  <div class="warnbox"><b>About API key storage.</b> By default your keys stay in this tab's memory only and disappear when you close or reload it. Saving keys in the browser can be read by any script running on this page or by anyone using this device. For a shared or public deployment, use backend mode below.</div>
+  <label class="switch"><input type="checkbox" id="gRemember" ${s.rememberKeys?'checked':''}><span>Remember keys on this device<br><small class="muted">Stores keys in this browser's local storage. Off by default.</small></span></label>
+  <label class="switch"><input type="checkbox" id="gBackend" ${s.backendMode?'checked':''}><span>Use the RAX backend proxy (recommended for production)<br><small class="muted">The server keeps provider keys in environment variables, so no key reaches the browser. See the README.</small></span></label>
+  ${s.backendMode?`<div class="field"><label for="gBackendUrl">Backend URL</label><input type="url" id="gBackendUrl" value="${esc(s.backendUrl)}" placeholder="Leave empty if this page is served by the RAX server"><small>Leave blank to use the same origin.</small></div>`:''}
+  <div class="row2"><button class="btn sm danger" data-clearchats>Delete all conversations</button></div>`}
+function compareTab(){
+  const rows=[['Google Gemini','Gemini Flash-family models','Free tier with limits set by Google','Yes','Yes','Good first choice for beginners'],['OpenRouter','Many models from many labs','Some models are free; availability changes','Yes','Varies by model','Free models are sorted first'],['Groq','Open-weight models','Depends on your current developer plan','Yes','Mostly text','Very fast replies'],['Cerebras','Eligible open-weight models','Depends on plan and model eligibility','Yes','Text','Check which models your plan allows'],['Pollinations','Image models (Flux, Turbo)','Free, no key. Rate limited and may add a watermark','No','No','Image generation only'],['Custom','Whatever your endpoint serves','Depends on the host','Usually','Varies','Local servers or other hosts']];
+  return `<div class="muted">Overview only. Models, free quotas and rate limits change often, so confirm current details on each provider's own site.</div>
+  <div class="tablew"><table class="cmp"><thead><tr><th>Provider</th><th>Models</th><th>Free access</th><th>Streaming</th><th>Images</th><th>Note</th></tr></thead><tbody>${rows.map(r=>`<tr>${r.map((c,i)=>`<td>${i===0?`<b>${esc(c)}</b>`:esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`}
+
+/* first-time wizard */
+function openWizard(startAt=1){
+  const W={step:startAt,id:S.settings.defaultProvider&&PROVIDERS[S.settings.defaultProvider]?S.settings.defaultProvider:'gemini',models:[],error:'',busy:false,tested:false};
+  const titles=['Welcome','Choose a provider','Get an API key','Paste your key','Automatic models','Test the connection','Start chatting'];
+  const draw=o=>{
+    const p=PROVIDERS[W.id];let body='',foot='';
+    const back=W.step>1&&W.step<7?`<button class="btn" data-w="back">Back</button>`:'';
+    if(W.step===1){body=`<p style="margin:0">RAX AI talks to real AI models through your own API key. Nothing is simulated. This setup takes about two minutes and has seven short steps.</p><div class="warnbox">Free quotas and models belong to each provider and can change at any time. RAX AI never ships a key, so you will create your own.</div>`;foot=`<button class="btn" data-w="skip">Skip for now</button><button class="btn primary" data-w="next">Get started</button>`}
+    if(W.step===2){body=`<div class="field"><label>Pick a provider</label>${['gemini','openrouter','groq','cerebras','custom'].map(id=>`<label class="pcard" style="cursor:pointer;flex-direction:row;gap:10px;align-items:flex-start"><input type="radio" name="wp" value="${id}" ${W.id===id?'checked':''} style="margin-top:4px;accent-color:var(--accent)"><span><b>${esc(PROVIDERS[id].name)}</b><br><span class="muted">${esc(PROVIDERS[id].desc)}</span></span></label>`).join('')}</div><small class="muted">Not sure? Google Gemini is the simplest start.</small>`;foot=`${back}<button class="btn primary" data-w="next">Continue</button>`}
+    if(W.step===3){body=p.custom?`<p style="margin:0">Enter the base URL of your OpenAI-compatible endpoint, and get a key from that host if it needs one.</p><div class="field"><label for="wBase">API base URL</label><input type="url" id="wBase" value="${esc(pcfg(W.id).customBase)}" placeholder="https://example.com/v1"></div>`:
+      `<ol style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px"><li>Open the official ${esc(p.name)} key page with the button below.</li><li>Sign in and create a new API key.</li><li>Copy the key, then come back here.</li></ol><div class="row2"><a class="btn primary" href="${p.keyUrl}" target="_blank" rel="noopener noreferrer">Open ${new URL(p.keyUrl).host} ${ic('ext')}</a><a class="btn" href="${p.docs}" target="_blank" rel="noopener noreferrer">Provider docs</a></div><small class="muted">Treat the key like a password. Never share it or post it online.</small>`;foot=`${back}<button class="btn primary" data-w="next">I have my key</button>`}
+    if(W.step===4){body=`<div class="field"><label for="wKey">${esc(p.name)} API key</label><div class="keyrow"><input type="password" id="wKey" placeholder="${S.keys[W.id]?esc(maskKey(S.keys[W.id])):'Paste your API key'}" autocomplete="off" spellcheck="false"><button class="ib" data-w="reveal" aria-label="Show or hide key">${ic('eye')}</button></div><small>${S.settings.rememberKeys?'This key will be saved in this browser.':'By default the key is kept in memory for this tab only. You can change that in Settings.'}</small></div>${W.error?`<div class="perr">${esc(W.error)}</div>`:''}`;foot=`${back}<button class="btn primary" data-w="next" ${W.busy?'disabled':''}>${W.busy?'Checking…':'Continue'}</button>`}
+    if(W.step===5){body=PROVIDERS[W.id].custom?`<div class="field"><label for="wModelT">Model name</label><input type="text" id="wModelT" value="${esc(pcfg(W.id).model||'')}" placeholder="Model id your endpoint serves"><small>Custom endpoints need a model name.</small></div>`:`<p style="margin:0">Your key works and ${W.models.length} models are available. RAX AI picks the best model automatically for each message: one for everyday chat, one for coding, and one for images. There is nothing to choose.</p>`;foot=`${back}<button class="btn primary" data-w="next">Continue</button>`}
+    if(W.step===6){body=`<p style="margin:0">Send a short test message to confirm the key and model work.</p><div id="wTest" role="status" class="muted">${W.tested?'<span class="pok">The test succeeded.</span>':'Not tested yet.'}</div>${W.error?`<div class="perr">${esc(W.error)}</div>`:''}`;foot=`${back}<button class="btn" data-w="test" ${W.busy?'disabled':''}>${W.busy?'Testing…':'Run test'}</button><button class="btn primary" data-w="next" ${W.tested?'':'disabled'}>Continue</button>`}
+    if(W.step===7){body=`<p style="margin:0"><b>${esc(p.name)}</b> is connected and set as your default. Ask anything to begin.</p>`;foot=`<button class="btn primary" data-w="done">Start chatting</button>`}
+    $('.modal',o).innerHTML=`<div class="mh"><h3>${titles[W.step-1]}</h3><span class="muted">Step ${W.step} of 7</span><button class="ib" data-w="skip" aria-label="Close setup">${ic('x')}</button></div><div class="mb"><div class="steps">${titles.map((_,i)=>`<i class="${i<W.step?'on':''}"></i>`).join('')}</div>${body}</div><div class="mf">${foot}</div>`;
+    const f=$('input:not([type=radio]):not([type=checkbox]),select',o);if(f)f.focus()};
+  openModal('',{onMount:o=>{
+    o.addEventListener('change',e=>{if(e.target.name==='wp')W.id=e.target.value});
+    o.addEventListener('click',async e=>{
+      const b=e.target.closest('[data-w]');if(!b)return;const a=b.dataset.w;
+      if(a==='skip'){S.settings.wizardDone=true;saveSettings();closeModal();return}
+      if(a==='back'){W.step--;W.error='';draw(o);return}
+      if(a==='reveal'){const i=$('#wKey',o);i.type=i.type==='password'?'text':'password';return}
+      if(a==='done'){S.settings.wizardDone=true;S.settings.defaultProvider=W.id;saveSettings();closeModal();renderAll();$('#input').focus();return}
+      if(a==='test'){W.busy=true;W.error='';draw(o);
+        try{const t=await Adapters.sendMessage(W.id,[{role:'user',content:'Reply with the single word: ready'}]);W.tested=!!t;pcfg(W.id).status='ok';pcfg(W.id).lastError=''}
+        catch(er){const n=normalizeError(W.id,er);W.error=n.message;W.tested=false;pcfg(W.id).status='error';pcfg(W.id).lastError=n.message}
+        W.busy=false;saveSettings();draw(o);return}
+      if(a==='next'){
+        if(W.step===3&&PROVIDERS[W.id].custom){const v=$('#wBase',o).value.trim();const chk=validateEndpoint(v);if(!chk.ok){toast(chk.msg);return}pcfg(W.id).customBase=v}
+        if(W.step===4){const k=$('#wKey',o).value.trim();if(k)S.keys[W.id]=k;
+          if(!S.settings.backendMode&&!S.keys[W.id]&&!PROVIDERS[W.id].custom&&!PROVIDERS[W.id].noKey){W.error='Paste your API key to continue.';draw(o);return}
+          W.busy=true;W.error='';draw(o);saveKeys();
+          const r=await Adapters.validateConfiguration(W.id);W.busy=false;
+          if(!r.ok){W.error=r.error.message;pcfg(W.id).status='error';pcfg(W.id).lastError=r.error.message;saveSettings();draw(o);return}
+          W.models=r.models;pcfg(W.id).status='ok';
+          saveSettings()}
+        if(W.step===5){if(PROVIDERS[W.id].custom){const t=$('#wModelT',o).value.trim();if(!t){toast('Enter a model name.');return}pcfg(W.id).model=t}S.settings.defaultProvider=W.id;saveSettings();W.tested=false}
+        W.step++;W.error='';draw(o)}});
+    draw(o)}});
+}
+
+/* ---------- 8. Boot & events ---------- */
+function renderAll(){renderSidebar();renderComposerSelectors();renderStage();updateSendBtn()}
+function openDrawer(){$('#app').classList.add('drawer')}
+function closeDrawer(){$('#app').classList.remove('drawer')}
+function init(){
+  applyTheme();setupStaticIcons();renderAll();autosize();
+  $('#newChat').onclick=newChat;
+  $('#menuBtn').onclick=()=>{if(matchMedia('(max-width:820px)').matches)openDrawer();else $('#app').classList.toggle('collapsed')};
+  $('#collapseBtn').onclick=()=>{if(matchMedia('(max-width:820px)').matches)closeDrawer();else $('#app').classList.add('collapsed')};
+  $('#scrim').onclick=closeDrawer;
+  $('#themeBtn').onclick=()=>{S.settings.theme=S.settings.theme==='light'?'dark':'light';saveSettings();applyTheme();updateThemeBtn()};
+  $('#openSettings').onclick=()=>{closeDrawer();openSettings('general')};
+  $('#openProviders').onclick=()=>{closeDrawer();openSettings('providers')};
+  $('#search').oninput=renderSidebar;
+  $('#navImage').onclick=()=>{closeDrawer();if(!S.imageMode)toggleImageMode();else $('#input').focus()};
+  $('#modeChat').onclick=()=>{if(S.imageMode)toggleImageMode()};$('#modeImg').onclick=()=>{if(!S.imageMode)toggleImageMode()};
+  const showSearch=()=>{$('#app').classList.remove('collapsed');const b=$('#sbox');b.hidden=false;$('#search').focus()};
+  $('#navSearch').onclick=()=>{const b=$('#sbox');if(!b.hidden&&!$('#app').classList.contains('collapsed')){b.hidden=true;$('#search').value='';renderSidebar()}else showSearch()};
+  $('#logoBtn').onclick=()=>{if($('#app').classList.contains('collapsed'))$('#app').classList.remove('collapsed')};
+  const heroClick=e=>{const w=e.target.closest('[data-act="wizard"]');if(w){openWizard();return}
+    const r=e.target.closest('[data-fill],[data-mode]');if(!r)return;
+    if(r.dataset.mode==='image'){if(!S.imageMode)toggleImageMode();$('#input').focus();return}
+    if(S.imageMode)toggleImageMode();const i=$('#input');i.value=r.dataset.fill||'';autosize();i.focus()};
+  ['#heroSug','#heroChips'].forEach(s=>$(s).addEventListener('click',heroClick));
+  $('#topSettings').onclick=()=>openSettings('general');
+  $('#setBtn').onclick=()=>openSettings('general');
+  $('#upgBtn').onclick=()=>{closeDrawer();openSettings('providers')};
+  $('#exportBtn').onclick=exportChat;
+  const toggleOpt=e=>{e.stopPropagation();closePlusMenu();const p=$('#optPanel');p.hidden=!p.hidden;$('#optBtn').setAttribute('aria-expanded',String(!p.hidden))};
+  $('#optBtn').onclick=toggleOpt;$('#provPill').onclick=toggleOpt;$('#provPill').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleOpt(e)}};
+  document.addEventListener('click',e=>{if(!e.target.closest('#optPanel,#optBtn,#provPill')){$('#optPanel').hidden=true;$('#optBtn').setAttribute('aria-expanded','false')}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#optPanel').hidden=true});
+  $('#send').onclick=()=>S.gen?stopGen():sendUser($('#input').value);
+  $('#input').addEventListener('input',autosize);
+  $('#input').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();S.gen?null:sendUser($('#input').value)}});
+  document.addEventListener('keydown',e=>{
+    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();$('#input').focus()}
+    if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.key.toLowerCase()==='o'){e.preventDefault();newChat()}
+    if(e.key==='Escape'&&S.gen&&!modalEl)stopGen()});
+  $('#attachBtn').onclick=e=>{e.stopPropagation();togglePlusMenu()};
+  document.addEventListener('click',e=>{if(!e.target.closest('#plusMenu'))closePlusMenu()});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closePlusMenu()});
+  $('#plusMenu').addEventListener('click',e=>{const b=e.target.closest('[data-pm]');if(!b)return;const a=b.dataset.pm;closePlusMenu();
+    if(a==='file'){if(S.imageMode)toggleImageMode();$('#file').click()}
+    else if(a==='image'){if(!S.imageMode)toggleImageMode();$('#input').focus()}
+    else if(a==='code'){if(S.imageMode)toggleImageMode();const i=$('#input');i.value='Help me write code for: ';autosize();i.focus()}
+    else if(a==='voice')toggleVoice();
+    else if(a==='detail'){S.detailed=!S.detailed;toast(S.detailed?'Detailed answers on':'Detailed answers off')}
+    else if(a==='providers')openSettings('providers');else if(a==='settings')openSettings('general')});
+  $('#file').onchange=async e=>{await addFiles([...e.target.files]);e.target.value=''};
+  $('.composer').addEventListener('dragover',e=>e.preventDefault());
+  $('.composer').addEventListener('drop',async e=>{e.preventDefault();if(e.dataTransfer.files.length)await addFiles([...e.dataTransfer.files])});
+  $('#input').addEventListener('paste',async e=>{const f=[...(e.clipboardData?.files||[])];if(f.length){e.preventDefault();await addFiles(f)}});
+  $('#atts').addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(b){S.attachments.splice(+b.dataset.rm,1);renderAtts()}});
+  $('#micBtn').onclick=toggleVoice;
+  $('#imgBtn').onclick=toggleImageMode;
+  $('#toLatest').onclick=()=>{sc().scrollTo({top:sc().scrollHeight,behavior:'smooth'})};
+  sc().addEventListener('scroll',updateToLatest,{passive:true});
+  $('#modelSel').onchange=e=>{const mode=S.imageMode?'image':'text';const id=S.imageMode?currentImageProviderId():currentProviderId();if(!id)return;picks()[mode][id]=e.target.value;saveSettings();toast(e.target.value?'Model set: '+e.target.selectedOptions[0].textContent:'Auto model selection on')};
+  $('#provSel').onchange=async e=>{const id=e.target.value;
+    const ch=activeChat();if(ch)ch.provider=id;S.settings.defaultProvider=id;saveSettings();saveChats();renderComposerSelectors();renderStatus();
+    if(!S.models[id]&&hasKey(id)){try{await Adapters.listModels(id);renderComposerSelectors()}catch(er){}}};
+  $('#chatlist').addEventListener('click',e=>{
+    const b=e.target.closest('[data-act]');if(!b)return;const item=b.closest('.chat-item');const id=item.dataset.id;const c=S.chats.find(x=>x.id===id);if(!c)return;
+    const a=b.dataset.act;
+    if(a==='open')openChat(id);
+    if(a==='pin'){c.pinned=!c.pinned;saveChats();renderSidebar()}
+    if(a==='rename')promptDialog('Rename conversation',c.title,v=>{c.title=v;saveChats();renderAll()});
+    if(a==='delete')confirmDialog('Delete this conversation?','"'+c.title.slice(0,60)+'" will be removed from this device.','Delete',()=>{if(S.gen?.chatId===id)stopGen();purgeImages(c);S.chats=S.chats.filter(x=>x.id!==id);if(S.activeId===id)S.activeId=null;saveChats();renderAll()})});
+  stage().addEventListener('click',e=>{
+    const card=e.target.closest('[data-prompt]');if(card){sendUser(card.dataset.prompt);return}
+    const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act;
+    if(a==='wizard'){openWizard();return}
+    if(a==='dl-img'){downloadImage(b.dataset.img);return}
+    if(a==='copy-code'){const code=b.closest('.codeblk').querySelector('code').textContent;copyText(code).then(()=>{const s=b.querySelector('span');if(s){s.textContent='Copied';setTimeout(()=>s.textContent='Copy code',1500)}});return}
+    const msgEl=b.closest('.msg');const ch=activeChat();const m=ch?.messages.find(x=>x.id===msgEl?.dataset.mid);
+    if(a==='copy-msg'&&m)copyText(m.content);
+    if(a==='regen')regenerate();
+    if(a==='retry'){if(m){m.error=null}regenerate()}
+    if(a==='up'||a==='down'){m.feedback=m.feedback===a?null:a;saveChats();renderStage(true);toast(m.feedback?'Thanks for the feedback':'Feedback removed')}
+    if(a==='edit'&&m){S.editingId=m.id;renderStage(true);const t=$('#editArea');t&&(t.focus(),t.setSelectionRange(t.value.length,t.value.length))}
+    if(a==='edit-cancel'){S.editingId=null;renderStage(true)}
+    if(a==='edit-save'&&m)saveEdit(m.id)});
+  window.addEventListener('beforeunload',e=>{if(S.gen){e.preventDefault();e.returnValue=''}});
+  // first run: open wizard when nothing is configured
+  if(!S.settings.wizardDone&&!TEXT_IDS().some(isUsable))setTimeout(()=>openWizard(),350);
+  // preload model lists for configured providers (silent)
+  TEXT_IDS().forEach(id=>{if(S.settings.providers[id]&&hasKey(id)&&!S.settings.backendMode)Adapters.listModels(id).then(renderComposerSelectors).catch(()=>{})});
+  if(S.settings.backendMode&&S.settings.defaultProvider){Adapters.listModels(S.settings.defaultProvider).then(renderComposerSelectors).catch(()=>{})}
+}
+init();
+</script>
+</body>
+</html>
